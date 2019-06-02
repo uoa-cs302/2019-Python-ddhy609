@@ -5,13 +5,16 @@ import nacl.signing
 import nacl.encoding
 import time
 
+
 url = "http://cs302.kiwi.land/api/rx_broadcast"
 
 #STUDENT TO UPDATE THESE...
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
 
-message = "FINALLY!"
+
+message = "\U0001F637" + "This works?"
+#message = "FINALLY!"
 # Generate a new random signing key
 hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
 signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)

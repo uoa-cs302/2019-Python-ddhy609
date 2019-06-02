@@ -10,6 +10,8 @@ url = "http://cs302.kiwi.land/api/ping"
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
 
+#print("OKAY")
+#print("\U0001F602")
 
 # Generate a new random signing key
 #signing_key = nacl.signing.SigningKey.generate()

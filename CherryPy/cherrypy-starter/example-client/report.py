@@ -47,7 +47,7 @@ headers = {
 }
 
 payload = {
-    "connection_address" : "127.0.0.1:8000",
+    "connection_address" : "172.23.124.123:1234",   #IP+ListeningPort
 	"connection_location" : 1,
     "incoming_pubkey" : pubkey_hex_str
 }

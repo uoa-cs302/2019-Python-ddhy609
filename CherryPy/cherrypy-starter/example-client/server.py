@@ -9,6 +9,7 @@ import time
 
 startHTML = "<html><head><title>CS302 example</title><link rel='stylesheet' href='/static/example.css' /></head><body>"
 
+#class handling all url without /api
 class MainApp(object):
 
 	#CherryPy Configuration
@@ -76,7 +77,20 @@ class MainApp(object):
             cherrypy.lib.sessions.expire()
         raise cherrypy.HTTPRedirect('/')
 
+#class to handle receiving of apis (i.e. urls with /api)
+class Api(object):
+    @cherrypy.expose
+    def rx_broadcast(self):
+        #json.loads  = loads json object
+        #cherry.request.body.read  = requesting url and reading payload
+        message = json.loads(cherrypy.request.body.read().decode('utf-8'))
+        print(message)
 
+        reply = { 
+            "response" : "ok"
+        }
+        
+        return(json.dumps(reply))
 ###
 ### Functions only after here
 ###

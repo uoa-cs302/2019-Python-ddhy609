@@ -6,6 +6,7 @@ import nacl.encoding
 import time
 
 
+#cs302.kiwi.land needs to be replaced by IP address+ListeningPort of receiver
 url = "http://cs302.kiwi.land/api/rx_broadcast"
 
 #STUDENT TO UPDATE THESE...

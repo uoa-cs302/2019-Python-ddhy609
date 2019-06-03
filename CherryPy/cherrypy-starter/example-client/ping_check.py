@@ -5,22 +5,19 @@ import nacl.signing
 import nacl.encoding
 import time
 
-
-#cs302.kiwi.land needs to be replaced by IP address+ListeningPort of receiver
-IP= "172.23.114.169:1234"
-url = "http://"+ IP +"/api/rx_broadcast"
+url = "http://cs302.kiwi.land/api/ping_check"
 
 #STUDENT TO UPDATE THESE...
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
 
 
-#space after emoji required to allow for overlap b/w emoji and text
-message = "\U0001F637 " + "This works?"
-#message = "FINALLY!"
-# Generate a new random signing key
+
+#hex_key = signing_key.encode(encoder=nacl.encoding.HexEncoder)
 hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
 signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
+print(hex_key)
+#######
 
 
 # Sign a message with the signing key
@@ -28,20 +25,19 @@ signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
 # Obtain the verify key for a given signing key
 verify_key = signing_key.verify_key
 
-
-ts = time.time()
 # Serialize the verify key to send it to a third party
 verify_key_hex = verify_key.encode(encoder=nacl.encoding.HexEncoder)
 
+####copied from hints
 pubkey_hex = signing_key.verify_key.encode(encoder=nacl.encoding.HexEncoder)
 pubkey_hex_str = pubkey_hex.decode('utf-8')
 
-login_record = "ddhy609,e91e6780af87f41217d4be94bb6398a027e2c0e28bb0370c414abb9c952399fd,1558592327.9529357,8cecc3bfb3b9739fc4c443f61d36f23184099b758ba6c8a93c3946b8c067bf56b931205e9d713a1818d63ff5540e33959ad350046c598639b2a3abad2d191605"
-server_time= str(time.time())
-message_bytes = bytes(login_record + message + server_time, encoding='utf-8')
+message_bytes = bytes(pubkey_hex_str, encoding='utf-8')
 
 signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
+#signature is basically hash. Used to verify pub key is related to private key
 signature_hex_str = signed.signature.decode('utf-8')
+####
 
 #create HTTP BASIC authorization header
 credentials = ('%s:%s' % (username, password))
@@ -52,10 +48,11 @@ headers = {
 }
 
 payload = {
-    "loginserver_record" : login_record,
-	"message" : message,
-	"sender_created_at" : server_time,
-	"signature" : signature_hex_str
+    "my_time" : str(time.time()),
+    #"my_active_usernames" : username,
+    "connection_address" : "172.23.124.123:1234",
+    #"connection_address" : "127.0.0.1:8000",
+	"connection_location" : 1
 }
 payload = json.dumps(payload).encode('utf-8')
 

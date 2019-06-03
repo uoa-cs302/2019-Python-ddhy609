@@ -6,6 +6,8 @@ import nacl.signing
 import nacl.encoding
 import jinja2
 import time
+import nacl.secret
+import nacl.utils
 
 startHTML = "<html><head><title>CS302 example</title><link rel='stylesheet' href='/static/example.css' /></head><body>"
 
@@ -89,7 +91,37 @@ class Api(object):
         reply = { 
             "response" : "ok"
         }
+
+        return(json.dumps(reply))
+
+    @cherrypy.expose
+    def rx_privatemessage(self):
+        #json.loads  = loads json object
+        #cherry.request.body.read  = requesting url and reading payload
+        message = json.loads(cherrypy.request.body.read()) #.decode('utf-8'))
+        message_received = message['encrypted_message']
         
+        key=b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+
+        signing_key=nacl.signing.SigningKey(key,encoder=nacl.encoding.HexEncoder)
+        publickey= signing_key.to_curve25519_private_key()
+        sealed_box=nacl.public.SealedBox(publickey)
+        
+        #decoded message in bytes
+        message_decrypted = sealed_box.decrypt(message_received,encoder=nacl.encoding.HexEncoder)
+       
+        #decoded message in string
+        m_decode = message_decrypted.decode('utf-8')
+        
+        #print(message)
+        print(message_received) 
+        #print(message_decrypted)
+        print(m_decode)
+
+        reply = { 
+            "response" : "ok"
+        }
+
         return(json.dumps(reply))
 ###
 ### Functions only after here

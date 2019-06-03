@@ -86,7 +86,7 @@ class MainApp(object):
         print("Going into function")
         print(message)
     ##need to update later to allow for user to user messaging. Atm, just hammonds client.
-        url = "http://172.23.114.169:1234/api/rx_privatemessage"   #rx_privatemessage"
+        url = "http://172.23.114.169:1234/api/rx_privatemessage"
 
 
 
@@ -184,6 +184,8 @@ class MainApp(object):
 
         JSON_object = json.loads(data.decode(encoding))
         print(JSON_object)
+
+        raise cherrypy.HTTPRedirect("/")
 
 ###########################################################33
 #main closes above

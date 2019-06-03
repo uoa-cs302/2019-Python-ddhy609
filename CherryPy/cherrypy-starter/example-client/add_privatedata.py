@@ -55,16 +55,20 @@ encrypted = box.encrypt(message)
 
 assert len(encrypted) == len(message) + box.NONCE_SIZE + box.MACBYTES
 
+print(encrypted)
+print(str(encrypted))
 #converting back to string
 # Decrypt our message, an exception will be raised if the encryption was
 #   tampered with or there was otherwise an error.
-plaintext = box.decrypt(encrypted)
-privatedata = plaintext.decode('utf-8')
+
+#plaintext = box.decrypt(encrypted)
+#privatedata = plaintext.decode('utf-8')
 ##########################
 
 ##
 server_time= str(time.time())
-message_bytes = bytes(privatedata + login_record + server_time, encoding='utf-8')
+
+message_bytes = bytes(str(encrypted) + login_record + server_time, encoding='utf-8')
 
 signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
 signature_hex_str = signed.signature.decode('utf-8')
@@ -80,7 +84,7 @@ headers = {
 }
 
 payload = {
-    "privatedata" : privatedata,
+    "privatedata" : str(encrypted),
     "loginserver_record" : login_record,
 	"client_saved_at" : server_time,
 	#"sender_created_at" : server_time,

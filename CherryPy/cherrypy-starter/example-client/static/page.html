@@ -1,0 +1,37 @@
+<!--source code: https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_sidenav_fixed -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="static/pageStyle.css">
+        <script type="text/javascript" src="static/jquery.js"></script>
+        <script src="static/javas.js" async></script>
+        <title>PiChat</title>
+    </head>
+
+    <body>
+        <div class="sidenav">
+            <a id="tabHome">PiChat</a>
+            <p> </p>
+            <a id="tabFeed">Feed</a>
+            <a id="tabMessages">Messages</a>
+            <a id="tabAccountInfo">Account Info</a>
+            <a id="tabSettings">Settings</a>
+        </div>
+
+        <div class="main">
+            <h2 id="headingTitle">PiChat</h2>
+            <p id="feed">Welcome to PiChat</p>
+
+            <form id="messageBox" action="tx_broadcast" method="post">
+                <textarea id = "myTextArea" rows = "3" cols = "80" Text name="message"></textarea>
+                <button id="sendMessage" type="submit">Send</button>
+    
+                <!-- <input id = "myTextArea" name="message">Enter Text here</textarea>
+                <input type="submit">Send</button> -->
+            </form>
+        </div>
+
+
+    </body>
+</html> 

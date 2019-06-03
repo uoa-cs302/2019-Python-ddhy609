@@ -39,7 +39,8 @@ class MainApp(object):
         except KeyError: #There is no username
             
             Page += "Click here to <a href='login'>login</a>."
-        return Page
+
+        return open("static/page.html")
         
     @cherrypy.expose
     def login(self, bad_attempt = 0):

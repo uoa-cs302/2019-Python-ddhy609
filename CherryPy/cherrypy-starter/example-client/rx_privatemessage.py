@@ -6,17 +6,17 @@ import nacl.encoding
 import time
 
 ##need to update later to allow for user to user messaging. Atm, just hammonds client.
-url = "http://cs302.kiwi.land/api/rx_privatemessage"
+url = "http://172.23.114.169:1234/api/rx_privatemessage"   #rx_privatemessage"
 
 
 
 #STUDENT TO UPDATE THESE...
-target_pubkey = "11c8c33b6052ad73a7a29e832e97e31f416dedb7c6731a6f456f83a344488ec0"
-target_username = "admin"
+target_pubkey = "78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e"
+target_username = "fsan110"
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
 
-message = bytes("Alright!", encoding='utf8')
+message = bytes("WE got this! \U0001F637  !!!!", encoding='utf-8')
 # Generate a new random signing key
 hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
 signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)

@@ -185,7 +185,7 @@ class MainApp(object):
         JSON_object = json.loads(data.decode(encoding))
         print(JSON_object)
 
-        raise cherrypy.HTTPRedirect("/")
+        #raise cherrypy.HTTPRedirect("/")
 
 ###########################################################33
 #main closes above

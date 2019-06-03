@@ -14,6 +14,12 @@ $(document).ready(function(){
         $("#messageBox").show()
     });
 
+    /* $("#sendMessage").on('click', function(){
+        $("#headingTitle").html("Messages")
+        $("#feed").html("")
+        $("#messageBox").show()
+    }); */
+
     //Account Info
     $("#tabAccountInfo").on('click', function(){
         $("#headingTitle").html("Account Info")

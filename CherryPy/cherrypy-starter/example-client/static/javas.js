@@ -2,42 +2,55 @@
 $(document).ready(function(){
     //Feed
     $("#tabFeed").on('click', function(){
-        $("#headingTitle").html("Feed")
-        $("#feed").html("")
-        $("#messageBox").hide()
+     
     });
 
     //Messages
     $("#tabMessages").on('click', function(){
-        $("#headingTitle").html("Messages")
-        $("#feed").html("")
-        $("#messageBox").show()
+        /*code-source: https://www.pair.com/support/kb/how-to-use-jquery-to-show-hide-a-form-on-click/ */
+        /*$("#messageBox").toggle()*/
     });
 
-    /* $("#sendMessage").on('click', function(){
-        $("#headingTitle").html("Messages")
-        $("#feed").html("")
-        $("#messageBox").show()
-    }); */
+    //Form information send
+    $('form').on('submit', function(event) {
+        // Prevent the page from reloading
+        //event.preventDefault();
+        
+        // Set the text-output span to the value of the first input
+        var $input = $(this).find('input');
+        var input = $input.val();
+        
+        $('#text-output').text("You typed: " + input);
+
+        $.ajax({
+            type: "POST",
+            url: "/tx_broadcast",
+            data: "message="+input,
+            error : function(){
+                window.alert("Couldn't send message")
+            }
+        })
+
+      /*   var xhr = new XMLHttpRequest();
+        xhr.open('POST','/tx_broadcast',true);
+        //xhr.withCredentials = false;
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.send("message="+input); */
+        return false;
+    });
 
     //Account Info
     $("#tabAccountInfo").on('click', function(){
-        $("#headingTitle").html("Account Info")
-        $("#feed").html("")
-        $("#messageBox").hide()
+       
     });
 
     //Settings
     $("#tabSettings").on('click', function(){
-        $("#headingTitle").html("Settings")
-        $("#feed").html("")
-        $("#messageBox").hide()
+        
     });
 
     //Home
     $("#tabHome").on('click', function(){
-        $("#headingTitle").html("PiChat")
-        $("#feed").html("Welcome to PiChat")
-        $("#messageBox").hide()
+        
     });
 });

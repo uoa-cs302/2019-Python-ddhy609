@@ -8,7 +8,7 @@ import jinja2
 import time
 import nacl.secret
 import nacl.utils
-
+import sqlite3
 
 startHTML = "<html><head><title>CS302 example</title><link rel='stylesheet' href='/static/example.css' /></head><body>"
 
@@ -123,6 +123,9 @@ class Api(object):
         reply = { 
             "response" : "ok"
         }
+
+        db_create()
+        db_insert("feneelnew","working",str(time.time()))
 
         return(json.dumps(reply))
 
@@ -553,4 +556,46 @@ def rx_privatemessage (self, message):
     JSON_object = json.loads(data.decode(encoding))
     print(JSON_object)
 
-##########
+
+#creates a db and only creates table if not present
+def db_create():
+    #create my.db if it does not exist, if exists just connects to it
+    conn = sqlite3.connect("messages.db")
+    #to interact with db get the cursor
+    c=conn.cursor()
+
+
+    c.execute("""
+                create table if not exists message (id integer primary key autoincrement not null,
+                username text not null,
+                message text,
+                time_at text not null)
+            """
+                )
+                
+
+    conn.commit()            
+
+
+    #close db
+    conn.close
+
+
+#allows to insert into db
+def db_insert(upi, message, time):
+    #create my.db if it does not exist, if exists just connects to it
+    conn = sqlite3.connect("messages.db")
+    #to interact with db get the cursor
+    c=conn.cursor()
+
+
+    c.execute(" insert into message (username,message,time_at) values (?,?,?)",
+                  (upi,message,time))
+ 
+                
+
+    conn.commit()            
+
+
+    #close db
+    conn.close()

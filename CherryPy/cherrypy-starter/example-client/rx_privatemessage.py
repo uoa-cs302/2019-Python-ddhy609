@@ -13,8 +13,8 @@ url = "http://172.23.114.169:1234/api/rx_privatemessage"   #rx_privatemessage"
 #STUDENT TO UPDATE THESE...
 #oberoi pubkey = d76697455341f10649c6ac6241db51c3cc5a2bb9212384b0b3b21bddca1f6a87
 #feneel pubkey = 78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e
-target_pubkey = "d76697455341f10649c6ac6241db51c3cc5a2bb9212384b0b3b21bddca1f6a87"
-target_username = "lobe655"
+target_pubkey = "78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e"
+target_username = "fsan110"
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
 

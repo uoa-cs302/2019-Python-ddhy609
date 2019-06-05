@@ -126,15 +126,12 @@ class Api(object):
 
 
         loginserver_record= message['loginserver_record']
-        target_pubkey = "all"
-        target_username = "all"
         message_value = message['message']
         sender_created_at = message['sender_created_at']
-        print(sender_created_at)
         signature = message['signature']
 
-        db_create()
-        db_insert(loginserver_record, target_pubkey, target_username, message_value, sender_created_at, signature)
+        db_create_broadcast()
+        db_insert_broadcast(loginserver_record, message_value, sender_created_at, signature)
 
         return(json.dumps(reply))
 
@@ -167,6 +164,7 @@ class Api(object):
             message_gotten = message['encrypted_message']
 
 
+
         loginserver_record= message['loginserver_record']
         target_pubkey = message['target_pubkey']
         target_username = message['target_username']
@@ -175,22 +173,42 @@ class Api(object):
         #print(sender_created_at)
         signature = message['signature']
 
-        db_create()
-        db_insert(loginserver_record, target_pubkey, target_username, message_value, sender_created_at, signature)
+        db_create_message()
+        db_insert_message(loginserver_record, target_pubkey, target_username, message_value, sender_created_at, signature)
 
 
         #decoded message in string
-        
-        
-        #print(message)
         print(message_received) 
         #print(message_decrypted)
         print(m_decode)
 
+        return(json.dumps(reply))
+
+    @cherrypy.expose
+    def checkmessages(self, since):   
+        try:
+            #message_decrypted = sealed_box.decrypt(message_received,encoder=nacl.encoding.HexEncoder)
+            #m_decode = message_decrypted.decode('utf-8')
+            array_b = retrieve_from_db_broadcast(since)
+            array_m = retrieve_from_db_message(since)
+            reply = { 
+            "response" : "ok",
+            "broadcasts" : array_b,
+            "private_messages" : array_m
+            }
+            
+            #message_gotten = m_decode
+        except:
+            #m_decode = "message couldn't be decrypted"
+            reply = { 
+            "response" : "User is not sending data back"
+            }
+            #message_gotten = message['encrypted_message']
         
 
         return(json.dumps(reply))
-###
+
+
 ### Functions only after here
 ###
 #####
@@ -591,7 +609,7 @@ def rx_privatemessage (message):
 
 
 #creates a db and only creates table if not present
-def db_create():
+def db_create_message():
     #create my.db if it does not exist, if exists just connects to it
     conn = sqlite3.connect("messages.db")
     #to interact with db get the cursor
@@ -617,8 +635,31 @@ def db_create():
     conn.close
 
 
+def db_create_broadcast():
+    #create my.db if it does not exist, if exists just connects to it
+    conn = sqlite3.connect("messages.db")
+    #to interact with db get the cursor
+    c=conn.cursor()
+
+
+    c.execute("""
+                create table if not exists broadcast (id integer primary key autoincrement not null,
+                loginserver_record text not null,
+                message text,
+                sender_created_at text not null,
+                signature text not null)
+            """
+                )
+                
+
+    conn.commit()            
+
+
+    #close db
+    conn.close
+
 #allows to insert into db
-def db_insert(loginserver_record, target_pubkey, target_username, message_value, sender_created_at, signature):
+def db_insert_message(loginserver_record, target_pubkey, target_username, message_value, sender_created_at, signature):
     #create my.db if it does not exist, if exists just connects to it
     conn = sqlite3.connect("messages.db")
     #to interact with db get the cursor
@@ -636,6 +677,21 @@ def db_insert(loginserver_record, target_pubkey, target_username, message_value,
     #close db
     conn.close()
 
+
+def db_insert_broadcast(loginserver_record, message_value, sender_created_at, signature):
+    #create my.db if it does not exist, if exists just connects to it
+    conn = sqlite3.connect("messages.db")
+    #to interact with db get the cursor
+    c=conn.cursor()
+
+
+    c.execute(" insert into broadcast (loginserver_record, message,sender_created_at, signature) values (?,?,?,?)",
+                  (loginserver_record, message_value, sender_created_at, signature))
+ 
+    conn.commit()            
+
+    #close db
+    conn.close()
 
 def get_user_pubkey_and_status (upi):
     url = "http://cs302.kiwi.land/api/list_users"
@@ -717,3 +773,57 @@ def get_user_pubkey_and_status (upi):
                 break
 
     print (array_store)
+
+
+def retrieve_from_db_message (since) :
+    #create my.db if it does not exist, if exists just connects to it
+    conn = sqlite3.connect("messages.db")
+    #to interact with db get the cursor
+    c=conn.cursor()
+
+    #created_at is a real number does not return anything if it is 0
+    #DO NOT DO SELECT* as it selects all the data bad practice
+    # SQL INJECTION HANDLED by passing in username and password and using ?? 
+    c.execute("""
+            SELECT 
+            * from message""") 
+            #WHERE sender_created_at=?  
+            #""",(since)
+            #    )
+                
+    array_message = []
+    rows=c.fetchall()
+    for row in rows:       
+        array_message.append(row)
+
+    #close db
+    conn.close
+    return array_message
+
+
+def retrieve_from_db_broadcast (since) :
+    #create my.db if it does not exist, if exists just connects to it
+    conn = sqlite3.connect("messages.db")
+    #to interact with db get the cursor
+    c=conn.cursor()
+
+
+    
+    #created_at is a real number does not return anything if it is 0
+    #DO NOT DO SELECT* as it selects all the data bad practice
+    # SQL INJECTION HANDLED by passing in username and password and using ?? 
+    c.execute("""
+            SELECT 
+            * from broadcast""") 
+            #WHERE sender_created_at=?  
+            #""",(since)
+            #    )
+                
+    array_broadcast = []
+    rows=c.fetchall()
+    for row in rows:       
+        array_broadcast.append(row)
+
+    #close db
+    conn.close
+    return array_broadcast

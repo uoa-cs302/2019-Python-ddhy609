@@ -59,7 +59,7 @@ headers = {
 
 payload = {
     "connection_address" : ip_string+":1234",   #IP+ListeningPort
-	"connection_location" : 1,
+	"connection_location" : 1,   #ask if 1 or 0 or if it even matters
     "incoming_pubkey" : pubkey_hex_str
 }
 payload = json.dumps(payload).encode('utf-8')

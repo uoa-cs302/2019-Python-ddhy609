@@ -6,15 +6,16 @@ import nacl.encoding
 import time
 
 ##need to update later to allow for user to user messaging. Atm, just hammonds client.
-url = "http://172.23.114.169:1234/api/rx_privatemessage"   #rx_privatemessage"
-
+url = "http://172.23.103.37:1234/api/rx_privatemessage"   #rx_privatemessage"
+#rishab http://172.23.103.37:1234
 
 
 #STUDENT TO UPDATE THESE...
 #oberoi pubkey = d76697455341f10649c6ac6241db51c3cc5a2bb9212384b0b3b21bddca1f6a87
-#feneel pubkey = 78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e
-target_pubkey = "78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e"
-target_username = "fsan110"
+#feneel fsan110 pubkey = 78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e
+#rishab rgos933 pubkey = 296f04cbb7880da29b46498309903368d9f495f789128969e5334c82ea81d1d3
+target_pubkey = "296f04cbb7880da29b46498309903368d9f495f789128969e5334c82ea81d1d3"
+target_username = "rgos933"
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
 

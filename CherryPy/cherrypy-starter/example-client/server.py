@@ -805,8 +805,9 @@ def retrieve_from_db_message (since) :
                 
     array_message = []
     rows=c.fetchall()
-    for row in rows:       
-        array_message.append(row)
+    for row in rows:  
+        y=eval(row[0])     
+        array_message.append(y)  
         
 
     #getting the values out becoz for some reason I have a double array
@@ -836,9 +837,10 @@ def retrieve_from_db_broadcast (since) :
                 
     array_broadcast = []
     rows=c.fetchall()
-    for row in rows:       
-        array_broadcast.append(row)
-        
+    for row in rows:
+        #converting to dictionary
+        y=eval(row[0])    
+        array_broadcast.append(y)
 
     #getting the values out becoz for some reason I have a double array
     #array_broadcast = array_broadcast[0]
@@ -901,11 +903,26 @@ def checkmessages():
     broadcast_data = JSON_object['broadcasts']
     message_data = JSON_object['private_messages']
 
+    #need to store x as a string since its a Json object and sql only likes strings
     for x in broadcast_data:
-        db_insert_broadcast("1","2","3","4",x)
+        loginserver_record = x['loginserver_record']
+        message = x['message']
+        sender_created_at = x['sender_created_at']
+        signature = x['signature']
+
+        db_insert_broadcast(loginserver_record,message,sender_created_at,signature,str(x))
+     
 
     for x in message_data:
-        db_insert_message("1","2","3","4","5","6",x)
+        loginserver_record = x['loginserver_record']
+        target_pubkey = x['target_pubkey']
+        target_username = x['target_username']
+        encrypted_message = x['encrypted_message']
+        sender_created_at = x['sender_created_at']
+        signature = x['signature']
+        
+        db_insert_message(loginserver_record, target_pubkey, target_username, encrypted_message, sender_created_at, signature ,str(x))
 
-    print(broadcast_data)
+
+    #print(broadcast_data)
     response.close()

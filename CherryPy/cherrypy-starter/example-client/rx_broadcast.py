@@ -16,7 +16,7 @@ password = "DevashishDhyani_364084614"
 
 
 #space after emoji required to allow for overlap b/w emoji and text
-message = "\U0001F637 " + "This works?"
+message = "\U0001F637 " + "Checking against APi doc"
 #message = "FINALLY!"
 # Generate a new random signing key
 hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'

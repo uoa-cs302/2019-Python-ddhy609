@@ -52,4 +52,5 @@ broadcast_data = JSON_object['broadcasts']
 message_data = JSON_object['private_messages']
 
 print(broadcast_data)
+print(message_data)
 response.close()

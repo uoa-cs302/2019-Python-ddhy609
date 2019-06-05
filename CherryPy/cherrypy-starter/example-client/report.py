@@ -3,6 +3,8 @@ import json
 import base64
 import nacl.signing
 import nacl.encoding
+ 
+from subprocess import check_output
 
 url = "http://cs302.kiwi.land/api/report"
 
@@ -10,6 +12,15 @@ url = "http://cs302.kiwi.land/api/report"
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
 
+#######################################
+ip_command = (check_output(["hostname","-I"]))
+
+ip_string = ip_command.decode('utf-8')
+ip_string = ip_string[0:len(ip_string)-2]
+########################################################
+
+#print(ip)
+#ip_add = str(ip)
 
 
 #hex_key = signing_key.encode(encoder=nacl.encoding.HexEncoder)
@@ -47,7 +58,7 @@ headers = {
 }
 
 payload = {
-    "connection_address" : "172.23.124.123:1234",   #IP+ListeningPort
+    "connection_address" : ip_string+":1234",   #IP+ListeningPort
 	"connection_location" : 1,
     "incoming_pubkey" : pubkey_hex_str
 }

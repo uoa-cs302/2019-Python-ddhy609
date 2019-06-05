@@ -103,7 +103,7 @@ class MainApp(object):
 
     @cherrypy.expose
     def tx_broadcast(self,message):
-        rx_broadcast(message)
+        rx_privatemessage(message)
 
 
 
@@ -124,8 +124,17 @@ class Api(object):
             "response" : "ok"
         }
 
+
+        loginserver_record= message['loginserver_record']
+        target_pubkey = "all"
+        target_username = "all"
+        message_value = message['message']
+        sender_created_at = message['sender_created_at']
+        print(sender_created_at)
+        signature = message['signature']
+
         db_create()
-        db_insert("feneelnew","working",str(time.time()))
+        db_insert(loginserver_record, target_pubkey, target_username, message_value, sender_created_at, signature)
 
         return(json.dumps(reply))
 
@@ -149,12 +158,27 @@ class Api(object):
             reply = { 
             "response" : "ok"
             }
+            message_gotten = m_decode
         except:
             m_decode = "message couldn't be decrypted"
             reply = { 
             "response" : "Verify you are sending to right person. Message couldn't be decrypted."
             }
-        
+            message_gotten = message['encrypted_message']
+
+
+        loginserver_record= message['loginserver_record']
+        target_pubkey = message['target_pubkey']
+        target_username = message['target_username']
+        message_value = message_gotten
+        sender_created_at = message['sender_created_at']
+        #print(sender_created_at)
+        signature = message['signature']
+
+        db_create()
+        db_insert(loginserver_record, target_pubkey, target_username, message_value, sender_created_at, signature)
+
+
         #decoded message in string
         
         
@@ -465,20 +489,20 @@ def authoriseUserLogin(username, password):
 
 ##########
 
-def rx_privatemessage (self, message):
+def rx_privatemessage (message):
 ##need to update later to allow for user to user messaging. Atm, just hammonds client.
     url = "http://172.23.114.169:1234/api/rx_privatemessage"   #rx_privatemessage"
 
 
-
+    message = bytes(message,encoding='utf-8')
     #oberoi pubkey = d76697455341f10649c6ac6241db51c3cc5a2bb9212384b0b3b21bddca1f6a87
     #feneel pubkey = 78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e
-    target_pubkey = "d76697455341f10649c6ac6241db51c3cc5a2bb9212384b0b3b21bddca1f6a87"
-    target_username = "lobe655"
+    target_pubkey = "78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e"
+    target_username = "fsan110"
     username = "ddhy609"
     password = "DevashishDhyani_364084614"
 
-    message = bytes("WE got this! \U0001F637  !!!!", encoding='utf-8')
+    #message = bytes("WE got this! \U0001F637  !!!!", encoding='utf-8')
     # Generate a new random signing key
     hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
     signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
@@ -576,9 +600,12 @@ def db_create():
 
     c.execute("""
                 create table if not exists message (id integer primary key autoincrement not null,
-                username text not null,
+                loginserver_record text not null,
+                target_pubkey text,
+                target_username text,
                 message text,
-                time_at text not null)
+                sender_created_at text not null,
+                signature text not null)
             """
                 )
                 
@@ -591,15 +618,15 @@ def db_create():
 
 
 #allows to insert into db
-def db_insert(upi, message, time):
+def db_insert(loginserver_record, target_pubkey, target_username, message_value, sender_created_at, signature):
     #create my.db if it does not exist, if exists just connects to it
     conn = sqlite3.connect("messages.db")
     #to interact with db get the cursor
     c=conn.cursor()
 
 
-    c.execute(" insert into message (username,message,time_at) values (?,?,?)",
-                  (upi,message,time))
+    c.execute(" insert into message (loginserver_record, target_pubkey, target_username, message,sender_created_at, signature) values (?,?,?,?,?,?)",
+                  (loginserver_record, target_pubkey, target_username, message_value, sender_created_at, signature))
  
                 
 

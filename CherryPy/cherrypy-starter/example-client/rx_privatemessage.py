@@ -18,7 +18,7 @@ target_username = "fsan110"
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
 
-message = bytes("Sending to feneel but not laksh! \U0001F637  !!!!", encoding='utf-8')
+message = bytes("Decryption! \U0001F637  !!!!", encoding='utf-8')
 # Generate a new random signing key
 hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
 signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)

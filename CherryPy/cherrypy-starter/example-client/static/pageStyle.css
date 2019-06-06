@@ -26,6 +26,16 @@
     .sidenav a:hover {
     color: #f1f1f1;
     }
+
+    .typeForm{
+        top: 90%;
+        left: 200px;
+        position: fixed;        
+    }
+
+    input{
+        width: 900px;
+    }
     
     .main {
     margin-left: 160px; /* Same as the width of the sidenav */
@@ -40,6 +50,38 @@
     }
 
     /*source-code: https://www.pair.com/support/kb/how-to-use-jquery-to-show-hide-a-form-on-click/ */
-    #messageBox {
+   /*  #messageBox {
         display:none; 
+    } */
+
+    /* for messages.html */
+    .activeUsers {
+    height: 100%;
+    width: 160px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 161px;
+    background-color: #111;
+    overflow-x: hidden;
+    padding-top: 20px;
+    }
+        
+    .activeUsers a {
+    padding: 6px 8px 6px 16px;
+    text-decoration: none;
+    font-size: 25px;
+    color: #818181;
+    display: block;
+    }
+    
+    .activeUsers a:hover {
+    color: #f1f1f1;
+    }
+
+    .mainMessages {
+    margin-left: 320px; /* Same as the width of the sidenav */
+    margin-top: 0;
+    font-size: 28px; /* Increased text to enable scrolling */
+    padding: 0px 10px;
     }

@@ -17,11 +17,24 @@
             <a id="tabMessages" a href='/messages' target="_self">Messages</a>
             <a id="tabAccountInfo" href='/accountInfo' target="_self">Account Info</a>
             <a id="tabSettings" href='/settings' target="_self">Settings</a>
+            <a id="tabLogOut" href='/signout' target="_self">Sign Out</a>
         </div>
 
         <div class="main">
             <h2 id="headingTitle">Feed</h2>
             <p id="feed">Enter feed text here</p>
+
+             <!-- action="tx_broadcast" method="post" -->
+             <div class="typeForm">
+                <form>
+                    <!-- <textarea rows = "3" cols = "80"></textarea> -->
+                    <input type="text">
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+
+            <p id="text-output">Where is my output?</p>
+
         </div>
     </body>
 </html> 

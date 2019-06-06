@@ -106,8 +106,13 @@ class MainApp(object):
 
     @cherrypy.expose
     def tx_broadcast(self,message):
-        rx_privatemessage(message)
-        checkmessages()
+        #print(message)
+        rx_broadcast(message)
+        print_messages()  
+        #db_insert_broadcast
+        #rx_privatemessage(message)
+        #checkmessages()
+        #print(message)   
 
 
 
@@ -434,8 +439,9 @@ def add_pubkey(username, password):
 def rx_broadcast(message):
     #########################################################3
     #cs302.kiwi.land needs to be replaced by IP address+ListeningPort of receiver
-    IP= "172.23.114.169:1234"
-    url = "http://"+ IP +"/api/rx_broadcast"
+    IPFeneel= "172.23.114.169:1234"
+    IPAdmin = "210.54.33.182:80"
+    url = "http://"+ IPAdmin +"/api/rx_broadcast"
 
     #STUDENT TO UPDATE THESE...
     username = "ddhy609"
@@ -484,9 +490,17 @@ def rx_broadcast(message):
         "sender_created_at" : server_time,
         "signature" : signature_hex_str
     }
+
+    #insert payload as a string
+    db_insert_broadcast(login_record, message, server_time, signature_hex_str, str(payload))
+
     payload = json.dumps(payload).encode('utf-8')
 
-    #STUDENT TO COMPLETE:
+    ###insering into db
+    
+
+    ########
+
     #1. convert the payload into json representation, 
     #2. ensure the payload is in bytes, not a string
 
@@ -503,6 +517,8 @@ def rx_broadcast(message):
 
     JSON_object = json.loads(data.decode(encoding))
     print(JSON_object)     
+
+    
 
 def authoriseUserLogin(username, password):
 
@@ -856,6 +872,7 @@ def get_IP():
     return(ip_add)
 
 def checkmessages(): 
+
     Time =1558765969.000000
     #STUDENT TO UPDATE THESE...
     username = "ddhy609"
@@ -925,3 +942,39 @@ def checkmessages():
 
     #print(broadcast_data)
     response.close()
+
+
+
+def print_messages():
+    #create my.db if it does not exist, if exists just connects to it
+    conn = sqlite3.connect("messages.db")
+    #to interact with db get the cursor
+    c=conn.cursor()
+
+
+    
+    #created_at is a real number does not return anything if it is 0
+    #DO NOT DO SELECT* as it selects all the data bad practice
+    # SQL INJECTION HANDLED by passing in username and password and using ?? 
+    c.execute("""
+            SELECT 
+            message from broadcast""") 
+            #WHERE sender_created_at=?  
+            #""",(since)
+            #    )
+                
+    array_message = []
+    rows=c.fetchall()
+    for row in rows:
+        #converting to dictionary
+        #y=eval(row[0])    
+        array_message.append(row[0])
+
+    #getting the values out becoz for some reason I have a double array
+    #array_broadcast = array_broadcast[0]
+
+    #close db
+    conn.close
+
+    print(array_message)
+    return array_message

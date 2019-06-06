@@ -43,20 +43,18 @@ $(document).ready(function(){
                 window.alert("Couldn't send message")
             }
         })
-        
+
         $('#feed').html("");
         $.get("/get_database_messages", function(data) {
-            //window.alert(data)
+            var temp_data_array = data_array_value
             var data_array_value = data.split('/n')
             var i;
+            var arrLen = (data_array_value.length) - (temp_data_array.length)
+
             $('#feed').append("<br>");
-            for (i = 0; i < data_array_value.length; i++) {
-                //text_array += data_array_value[i]
-                //$('#feed').html(text_array + "<br />") 
-                $('#feed').append(data_array_value[i] + '<br>')               
+            for (i = 0; i < arrLen; i++) {
+                $('#feed').append(data_array_value + '<br>')               
             }
-            
-            //$('#feed').html(text_array + "<br />")
         });
 
       /*   var xhr = new XMLHttpRequest();
@@ -96,6 +94,19 @@ $(document).ready(function(){
                 $('#feed').text("Data retrieved is: " + data)
             }
         })*/
+
+
+        //THIS ONE IS WORKING:
+        /* $('#feed').html("");
+        $.get("/get_database_messages", function(data) {
+            //window.alert(data)
+            var data_array_value = data.split('/n')
+            var i;
+            $('#feed').append("<br>");
+            for (i = 0; i < data_array_value.length; i++) {
+                $('#feed').append(data_array_value[i] + '<br>')               
+            }
+        }); */
 
         //source-code: https://www.w3schools.com/jquery/jquery_ajax_get_post.asp 
          /* $.get("/get_database_messages", function(data) {

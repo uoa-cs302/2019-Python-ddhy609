@@ -1,9 +1,11 @@
 "use strict";
 
+//global variable storing last db for easy update
+var temp_data_array=[];
+
 $(document).ready(function(){
 
-    //global variable storing last db for easy update
-    var temp_data_array=[];
+    
 
     //Feed
     $("#tabFeed").on('click', function(){
@@ -61,7 +63,7 @@ $(document).ready(function(){
             
             
             for (i = 0; i < arrLen; i++) {
-                $('#feed').append('<br>' + data_array_value[length_oldDb+i] )               
+                $('#feed').append(data_array_value[length_oldDb+i] + '<br>'  )               
             }
 
             //storing new array into old array
@@ -75,6 +77,8 @@ $(document).ready(function(){
         xhr.send("message="+input); */
         return false;
     });
+
+    
 
     //Account Info
     $("#tabAccountInfo").on('click', function(){
@@ -140,3 +144,27 @@ $(document).ready(function(){
         }); */
     });
 });
+
+function refreshDataFeed(){
+    //$('#feed').html("");
+    $.get("/get_database_messages", function(data) {
+
+       //getting new array
+       var data_array_value = data.split('/n')
+       
+       var arrLen = (data_array_value.length) - (temp_data_array.length)
+       var length_oldDb = temp_data_array.length
+
+       var i;
+       
+       
+       for (i = 0; i < arrLen; i++) {
+           $('#feed').append(data_array_value[length_oldDb+i] + '<br>'  )               
+       }
+
+       //storing new array into old array
+       temp_data_array = data_array_value
+   });
+} 
+
+setInterval(refreshDataFeed, 5000);

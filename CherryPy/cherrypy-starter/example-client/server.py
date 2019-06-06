@@ -108,12 +108,11 @@ class MainApp(object):
     def tx_broadcast(self,message):
         #print(message)
         rx_broadcast(message)
-        print_messages()  
-        #db_insert_broadcast
-        #rx_privatemessage(message)
-        #checkmessages()
-        #print(message)   
 
+    @cherrypy.expose
+    def get_database_messages(self):
+        #print(print_broadcast_messages())
+        return print_broadcast_messages()
 
 
 ###########################################################33
@@ -945,7 +944,7 @@ def checkmessages():
 
 
 
-def print_messages():
+def print_broadcast_messages():
     #create my.db if it does not exist, if exists just connects to it
     conn = sqlite3.connect("messages.db")
     #to interact with db get the cursor
@@ -965,16 +964,19 @@ def print_messages():
                 
     array_message = []
     rows=c.fetchall()
+    string_message=""
     for row in rows:
         #converting to dictionary
         #y=eval(row[0])    
         array_message.append(row[0])
+        string_message = string_message + row[0] + "/n"
+        
 
     #getting the values out becoz for some reason I have a double array
     #array_broadcast = array_broadcast[0]
 
     #close db
     conn.close
-
-    print(array_message)
-    return array_message
+      
+    #print(array_message)
+    return (string_message)

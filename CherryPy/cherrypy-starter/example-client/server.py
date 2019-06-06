@@ -979,4 +979,7 @@ def print_broadcast_messages():
     conn.close
       
     #print(array_message)
+    
+    #going from 0 to -2 to get rid of the last /n value
+    string_message = string_message[0:-2]
     return (string_message)

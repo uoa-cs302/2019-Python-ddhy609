@@ -1,6 +1,10 @@
 "use strict";
 
 $(document).ready(function(){
+
+    //global variable storing last db for easy update
+    var temp_data_array=[];
+
     //Feed
     $("#tabFeed").on('click', function(){
         /* $.get("/get_database_messages", function(data) {
@@ -44,17 +48,24 @@ $(document).ready(function(){
             }
         })
 
-        $('#feed').html("");
+        //$('#feed').html("");
         $.get("/get_database_messages", function(data) {
-            var temp_data_array = data_array_value
-            var data_array_value = data.split('/n')
-            var i;
-            var arrLen = (data_array_value.length) - (temp_data_array.length)
 
-            $('#feed').append("<br>");
+            //getting new array
+            var data_array_value = data.split('/n')
+            
+            var arrLen = (data_array_value.length) - (temp_data_array.length)
+            var length_oldDb = temp_data_array.length
+
+            var i;
+            
+            
             for (i = 0; i < arrLen; i++) {
-                $('#feed').append(data_array_value + '<br>')               
+                $('#feed').append('<br>' + data_array_value[length_oldDb+i] )               
             }
+
+            //storing new array into old array
+            temp_data_array = data_array_value
         });
 
       /*   var xhr = new XMLHttpRequest();

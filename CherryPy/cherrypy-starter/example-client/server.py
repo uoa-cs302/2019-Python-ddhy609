@@ -786,7 +786,6 @@ def get_user_pubkey_and_status (upi):
 
     print (array_store)
 
-
 def retrieve_from_db_message (since) :
     #create my.db if it does not exist, if exists just connects to it
     conn = sqlite3.connect("messages.db")

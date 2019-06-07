@@ -102,10 +102,7 @@ class MainApp(object):
         else:
             cherrypy.lib.sessions.expire()
         raise cherrypy.HTTPRedirect('/login_page')
-  
-
-        
-
+    
     @cherrypy.expose
     def tx_broadcast(self,message):
         #print(message)
@@ -115,7 +112,6 @@ class MainApp(object):
     def get_database_messages(self):
         #print(print_broadcast_messages())
         return print_broadcast_messages()
-
     
 ###########################################################33
 #main closes above
@@ -125,24 +121,32 @@ class MainApp(object):
 class Api(object):
     @cherrypy.expose
     def rx_broadcast(self):
-        #json.loads  = loads json object
-        #cherry.request.body.read  = requesting url and reading payload
-        total_data = json.loads(cherrypy.request.body.read().decode('utf-8'))
-        print(total_data)
+        
+        try :
+            #json.loads  = loads json object
+            #cherry.request.body.read  = requesting url and reading payload
+            total_data = json.loads(cherrypy.request.body.read().decode('utf-8'))
+            print(total_data)
 
-        reply = { 
-            "response" : "ok"
-        }
+            reply = { 
+                "response" : "ok"
+            }
 
 
-        loginserver_record= total_data['loginserver_record']
-        message_value = total_data['message']
-        sender_created_at = total_data['sender_created_at']
-        signature = total_data['signature']
+            loginserver_record= total_data['loginserver_record']
+            message_value = total_data['message']
+            sender_created_at = total_data['sender_created_at']
+            signature = total_data['signature']
 
-        total_data = str(total_data)
-        db_create_broadcast()
-        db_insert_broadcast(loginserver_record, message_value, sender_created_at, signature, total_data)
+            total_data = str(total_data)
+            db_create_broadcast()
+            db_insert_broadcast(loginserver_record, message_value, sender_created_at, signature, total_data)
+        
+        except :
+            reply = { 
+                "response" : "ok"
+            }
+
 
         return(json.dumps(reply))
 
@@ -360,7 +364,7 @@ def report(username, passsword, status):
     }
 
     payload = {
-        "connection_address" : ip_val + ":1234",
+        "connection_address" : ip_val + ":10013",
         "connection_location" : 1,
         "incoming_pubkey" : pubkey_hex_str,
         "status" : status

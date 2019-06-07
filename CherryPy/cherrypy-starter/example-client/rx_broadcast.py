@@ -9,7 +9,7 @@ import time
 #cs302.kiwi.land needs to be replaced by IP address+ListeningPort of receiver
 IP= "172.23.114.169:1234"
 ip_rshi = "172.23.103.37:1234"
-url = "http://"+ ip_rshi +"/api/rx_broadcast"
+url = "http://"+ IP +"/api/rx_broadcast"
 
 #STUDENT TO UPDATE THESE...
 username = "ddhy609"
@@ -17,7 +17,7 @@ password = "DevashishDhyani_364084614"
 
 
 #space after emoji required to allow for overlap b/w emoji and text
-message = "\U0001F637 " + "Checking against APi doc"
+message = "\U0001F637 " + "Checking against APi doc NEW"
 #message = "FINALLY!"
 # Generate a new random signing key
 hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'

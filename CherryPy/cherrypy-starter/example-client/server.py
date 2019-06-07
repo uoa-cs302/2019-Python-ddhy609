@@ -44,6 +44,10 @@ class MainApp(object):
         return open("login.html")
 
     @cherrypy.expose
+    def home(self):
+        return open("piChat.html")
+
+    @cherrypy.expose
     def messages(self):
         return open("messages.html")
     
@@ -97,7 +101,10 @@ class MainApp(object):
             pass
         else:
             cherrypy.lib.sessions.expire()
-        raise cherrypy.HTTPRedirect('/')
+        raise cherrypy.HTTPRedirect('/login_page')
+  
+
+        
 
     @cherrypy.expose
     def tx_broadcast(self,message):
@@ -248,8 +255,8 @@ def ping(username, password):
     #hexkey= b'2da036038dc32976d9d3b0126bddfc93cd6e3ef0327eac0cd678b941848de308'
     ###Not really needed
     #hex_key = signing_key.encode(encoder=nacl.encoding.HexEncoder)
-    hex_key_dev = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
-    hex_key = b'a0251f5f930887567b0ca34611fbf23d7b6dc55b4d7b6006889661112610c55b'
+    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    #hex_key = b'a0251f5f930887567b0ca34611fbf23d7b6dc55b4d7b6006889661112610c55b'
     signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
     print(hex_key)
     #######
@@ -536,6 +543,7 @@ def authoriseUserLogin(username, password):
 
     ping_response = ping(username, password)
     if(ping_response['signature'] == "ok" and ping_response['response'] == "ok"):
+        report(username, password, "online")
         return 0
     else:
         return 1

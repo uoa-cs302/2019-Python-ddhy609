@@ -12,6 +12,7 @@ import sqlite3
 import subprocess
 import shlex
 from subprocess import check_output
+import nacl.pwhash
 
 startHTML = "<html><head><title>CS302 example</title><link rel='stylesheet' href='/static/example.css' /></head><body>"
 
@@ -35,19 +36,13 @@ class MainApp(object):
     # PAGES (which return HTML that can be viewed in browser)
     @cherrypy.expose
     def index(self):
-        Page = startHTML + "Welcome! This is a test website for COMPSYS302!<br/>"
-        
-        try:
-            Page += "Hello " + cherrypy.session['username'] + "!<br/>"
-            Page += "Here is some bonus text because you've logged in! <a href='/signout'>Sign out</a>"
-        except KeyError: #There is no username
-            
-            Page += "Click here to <a href='login'>login</a>."
-
-        return open("piChat.html")
-
+        return self.login_page()
     ############################################
     #open the seperate page files
+    @cherrypy.expose
+    def login_page(self):
+        return open("login.html")
+
     @cherrypy.expose
     def messages(self):
         return open("messages.html")
@@ -66,8 +61,8 @@ class MainApp(object):
 
     ###########################################
 
-    @cherrypy.expose
-    def login(self, bad_attempt = 0):
+    """ @cherrypy.expose
+    def login(self):
         Page = startHTML 
         if bad_attempt != 0:
             Page += "<font color='red'>Invalid username/password!</font>"
@@ -76,7 +71,7 @@ class MainApp(object):
         Page += 'Username: <input type="text" name="username"/><br/>'
         Page += 'Password: <input type="text" name="password"/>'
         Page += '<input type="submit" value="Login"/></form>'
-        return Page
+        return Page """
     
     @cherrypy.expose    
     def sum(self, a=0, b=0): #All inputs are strings by default
@@ -90,9 +85,9 @@ class MainApp(object):
         error = authoriseUserLogin(username, password)
         if error == 0:
             cherrypy.session['username'] = username
-            raise cherrypy.HTTPRedirect('/')
+            raise cherrypy.HTTPRedirect('/messages')
         else:
-            raise cherrypy.HTTPRedirect('/login?bad_attempt=1')
+            raise cherrypy.HTTPRedirect('/login_page')
 
     @cherrypy.expose
     def signout(self):
@@ -114,7 +109,7 @@ class MainApp(object):
         #print(print_broadcast_messages())
         return print_broadcast_messages()
 
-
+    
 ###########################################################33
 #main closes above
 ######################
@@ -222,6 +217,19 @@ class Api(object):
 
         return(json.dumps(reply))
 
+    @cherrypy.expose
+    def ping_check(self):
+        try:
+            reply = {
+                "response" : "ok",
+                "my_time" : str(time.time())
+            }
+        except:
+            reply = {
+                "response" : "Not correct",
+                "my_time" : str(time.time())
+            }
+        return (json.dumps(reply))
 
 ### Functions only after here
 ###
@@ -231,8 +239,8 @@ def ping(username, password):
     url = "http://cs302.kiwi.land/api/ping"
 
     #STUDENT TO UPDATE THESE...
-    username = "ddhy609"
-    password = "DevashishDhyani_364084614"
+    #username = "ddhy609"
+    #password = "DevashishDhyani_364084614"
 
 
     # Generate a new random signing key
@@ -240,7 +248,8 @@ def ping(username, password):
     #hexkey= b'2da036038dc32976d9d3b0126bddfc93cd6e3ef0327eac0cd678b941848de308'
     ###Not really needed
     #hex_key = signing_key.encode(encoder=nacl.encoding.HexEncoder)
-    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    hex_key_dev = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    hex_key = b'a0251f5f930887567b0ca34611fbf23d7b6dc55b4d7b6006889661112610c55b'
     signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
     print(hex_key)
     #######
@@ -296,6 +305,8 @@ def ping(username, password):
 
     JSON_object = json.loads(data.decode(encoding))
     print(JSON_object)
+
+    return JSON_object
 
 def report(username, passsword, status):
 
@@ -522,13 +533,15 @@ def rx_broadcast(message):
 def authoriseUserLogin(username, password):
 
     print("Log on attempt from {0}:{1}".format(username, password))
-    if ((username.lower() == "user") and (password.lower() == "password") or
-        (username.lower() == "user1") and (password.lower() == "password1")):
-        print("Success")
+
+    ping_response = ping(username, password)
+    if(ping_response['signature'] == "ok" and ping_response['response'] == "ok"):
         return 0
     else:
-        print("Failure")
         return 1
+
+    #for succesful login, return 0
+    #print(store_ping_response)
 
 
 def rx_privatemessage (message):
@@ -942,7 +955,146 @@ def checkmessages():
     #print(broadcast_data)
     response.close()
 
+#make changes later
+def add_privatedata():
+    url = "http://cs302.kiwi.land/api/add_privatedata"
 
+    #STUDENT TO UPDATE THESE...
+    username = "ddhy609"
+    password = "DevashishDhyani_364084614"
+    uniquepass = "password"
+
+    unix_time = str(time.time())
+    loginserverrecord = 'ddhy609,e91e6780af87f41217d4be94bb6398a027e2c0e28bb0370c414abb9c952399fd,1558592327.9529357,8cecc3bfb3b9739fc4c443f61d36f23184099b758ba6c8a93c3946b8c067bf56b931205e9d713a1818d63ff5540e33959ad350046c598639b2a3abad2d191605'
+    privkey = 'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+
+    privdata = {
+        "prikeys": [privkey],
+        "blocked_pubkeys" : [],
+        "blocked_username" : [],
+        "blocked_messages_signatures": [],
+        "blocked_words": [],
+        "favourite_message_signatures" : [],
+        "friends_usernames" : [],
+    }
+
+    encrypt_pass = bytes(uniquepass, encoding = 'utf-8')
+    salt_pass = bytes((uniquepass*16).encode('utf-8')[:16])
+
+    secret_key = nacl.pwhash.argon2i.kdf(32, encrypt_pass,salt_pass , nacl.pwhash.argon2i.OPSLIMIT_SENSITIVE, 
+                nacl.pwhash.argon2i.MEMLIMIT_SENSITIVE)
+
+    box = nacl.secret.SecretBox(secret_key)
+
+    nonce = nacl.utils.random(nacl.secret.SecretBox.NONCE_SIZE)
+
+    jsonBytes = bytes(json.dumps(privdata), encoding = 'utf-8')
+
+    encrypted_message = (base64.b64encode(box.encrypt(jsonBytes, nonce)))
+    privatedata = encrypted_message.decode('utf-8')
+
+
+    #print (privatedata)
+
+    signing_key = nacl.signing.SigningKey(privkey, encoder=nacl.encoding.HexEncoder)
+    message_bytes = bytes(privatedata + loginserverrecord + unix_time, encoding='utf-8')
+    signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
+    signature_hex_str = signed.signature.decode('utf-8')
+
+
+    #print (signature_hex_str)
+
+    #create HTTP BASIC authorization header
+    credentials = ('%s:%s' % (username, password))
+    b64_credentials = base64.b64encode(credentials.encode('ascii'))
+    headers = {
+        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'Content-Type' : 'application/json; charset=utf-8',
+    }
+
+    print(privatedata)
+    print(loginserverrecord)
+    print(signature_hex_str)
+
+    payload = {
+        "privatedata" : privatedata,
+        "loginserver_record" : loginserverrecord ,
+        "client_saved_at" : (unix_time),
+        "signature" : signature_hex_str
+    }
+    payload = json.dumps(payload).encode('utf-8')
+
+    try:
+        req = urllib.request.Request(url, data=payload, headers=headers)
+        response = urllib.request.urlopen(req)
+        data = response.read() # read the received bytes
+        encoding = response.info().get_content_charset('utf-8') #load encoding if possible (default to utf-8)
+        response.close()
+    except urllib.error.HTTPError as error:
+        print(error.read())
+        exit()
+
+    JSON_object = json.loads(data.decode(encoding))
+    print(JSON_object)
+
+#make changes later
+def get_privatedata():
+    url = "http://cs302.kiwi.land/api/get_privatedata"
+
+    #STUDENT TO UPDATE THESE...
+    username = "ddhy609"
+    password = "DevashishDhyani_364084614"
+    uniquepass = "password"
+    #print (signature_hex_str)
+
+    #create HTTP BASIC authorization header
+    credentials = ('%s:%s' % (username, password))
+    b64_credentials = base64.b64encode(credentials.encode('ascii'))
+    headers = {
+        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'Content-Type' : 'application/json; charset=utf-8',
+    }
+
+    payload = {
+        
+    }
+    payload = json.dumps(payload).encode('utf-8')
+
+    try:
+        req = urllib.request.Request(url, data=payload, headers=headers)
+        response = urllib.request.urlopen(req)
+        data = response.read() # read the received bytes
+        encoding = response.info().get_content_charset('utf-8') #load encoding if possible (default to utf-8)
+        response.close()
+    except urllib.error.HTTPError as error:
+        print(error.read())
+        exit()
+
+    JSON_object = json.loads(data.decode(encoding))
+
+    print(JSON_object)
+
+    encoded_string = JSON_object['privatedata'] #extract priavte data from the return parameters
+
+    print(encoded_string)
+
+    encrypt_pass = bytes(uniquepass, encoding = 'utf-8')
+    salt_pass = bytes((uniquepass*16).encode('utf-8')[:16])
+
+    secret_key = nacl.pwhash.argon2i.kdf(32, encrypt_pass,salt_pass , nacl.pwhash.argon2i.OPSLIMIT_SENSITIVE, 
+                nacl.pwhash.argon2i.MEMLIMIT_SENSITIVE)
+
+    box = nacl.secret.SecretBox(secret_key)
+
+    decrypt_string = box.decrypt(encoded_string, encoder=nacl.encoding.Base64Encoder)
+
+    decode_string = decrypt_string.decode('utf-8')
+
+
+    print (decode_string)
+
+#def ping_check():
+    
 
 def print_broadcast_messages():
     #create my.db if it does not exist, if exists just connects to it

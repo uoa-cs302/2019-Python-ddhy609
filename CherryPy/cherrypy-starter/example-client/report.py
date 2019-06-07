@@ -11,7 +11,7 @@ url = "http://cs302.kiwi.land/api/report"
 #STUDENT TO UPDATE THESE...
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
-
+status = "offline"
 #######################################
 ip_command = (check_output(["hostname","-I"]))
 
@@ -60,7 +60,8 @@ headers = {
 payload = {
     "connection_address" : ip_string+":1234",   #IP+ListeningPort
 	"connection_location" : 1,   #ask if 1 or 0 or if it even matters
-    "incoming_pubkey" : pubkey_hex_str
+    "incoming_pubkey" : pubkey_hex_str,
+    "status" : status
 }
 payload = json.dumps(payload).encode('utf-8')
 

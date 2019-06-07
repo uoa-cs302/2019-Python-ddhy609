@@ -5,39 +5,11 @@ import nacl.signing
 import nacl.encoding
 import time
 
-url = "http://cs302.kiwi.land/api/ping_check"
+url = "http://172.23.114.169:1234/api/ping_check"
 
 #STUDENT TO UPDATE THESE...
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
-
-
-
-#hex_key = signing_key.encode(encoder=nacl.encoding.HexEncoder)
-hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
-signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
-print(hex_key)
-#######
-
-
-# Sign a message with the signing key
-
-# Obtain the verify key for a given signing key
-verify_key = signing_key.verify_key
-
-# Serialize the verify key to send it to a third party
-verify_key_hex = verify_key.encode(encoder=nacl.encoding.HexEncoder)
-
-####copied from hints
-pubkey_hex = signing_key.verify_key.encode(encoder=nacl.encoding.HexEncoder)
-pubkey_hex_str = pubkey_hex.decode('utf-8')
-
-message_bytes = bytes(pubkey_hex_str, encoding='utf-8')
-
-signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
-#signature is basically hash. Used to verify pub key is related to private key
-signature_hex_str = signed.signature.decode('utf-8')
-####
 
 #create HTTP BASIC authorization header
 credentials = ('%s:%s' % (username, password))
@@ -50,10 +22,11 @@ headers = {
 payload = {
     "my_time" : str(time.time()),
     #"my_active_usernames" : username,
-    "connection_address" : "172.23.124.123:1234",
+    "connection_address" : "172.23.118.149:1234",
     #"connection_address" : "127.0.0.1:8000",
 	"connection_location" : 1
 }
+
 payload = json.dumps(payload).encode('utf-8')
 
 #STUDENT TO COMPLETE:

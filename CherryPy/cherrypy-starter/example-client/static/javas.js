@@ -51,7 +51,7 @@ $(document).ready(function(){
         })
 
         //$('#feed').html("");
-        $.get("/get_database_messages", function(data) {
+        /* $.get("/get_database_messages", function(data) {
 
             //getting new array
             var data_array_value = data.split('/n')
@@ -68,8 +68,8 @@ $(document).ready(function(){
 
             //storing new array into old array
             temp_data_array = data_array_value
-        });
-
+        }); */
+        refreshDataFeed()
       /*   var xhr = new XMLHttpRequest();
         xhr.open('POST','/tx_broadcast',true);
         //xhr.withCredentials = false;
@@ -147,6 +147,8 @@ $(document).ready(function(){
 
 function refreshDataFeed(){
     //$('#feed').html("");
+    console.log("refresh being called")
+
     $.get("/get_database_messages", function(data) {
 
        //getting new array
@@ -167,4 +169,4 @@ function refreshDataFeed(){
    });
 } 
 
-setInterval(refreshDataFeed, 5000);
+setInterval(refreshDataFeed, 30000);

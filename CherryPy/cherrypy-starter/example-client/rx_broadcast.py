@@ -8,7 +8,8 @@ import time
 
 #cs302.kiwi.land needs to be replaced by IP address+ListeningPort of receiver
 IP= "172.23.114.169:1234"
-url = "http://"+ IP +"/api/rx_broadcast"
+ip_rshi = "172.23.103.37:1234"
+url = "http://"+ ip_rshi +"/api/rx_broadcast"
 
 #STUDENT TO UPDATE THESE...
 username = "ddhy609"

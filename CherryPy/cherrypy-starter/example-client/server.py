@@ -920,6 +920,7 @@ def checkmessages():
         'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
         'Content-Type' : 'application/json; charset=utf-8',
     }
+    
     payload ={
         ##GET REQUEST NO PAYLOAD
     }

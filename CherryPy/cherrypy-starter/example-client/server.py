@@ -144,12 +144,13 @@ class Api(object):
         
         except :
             reply = { 
-                "response" : "ok"
+                "response" : "not ok"
             }
 
 
         return(json.dumps(reply))
 
+    #MOVE DECRYPTION OUT later and make a helper function
     @cherrypy.expose
     def rx_privatemessage(self):
         #json.loads  = loads json object
@@ -191,7 +192,7 @@ class Api(object):
         total_data = str(total_data)
         
         db_create_message()
-        db_insert_message(loginserver_record, target_pubkey, target_username, message_value, sender_created_at, signature, total_data)
+        db_insert_message(loginserver_record, target_pubkey, target_username, message_received, sender_created_at, signature, total_data)
 
 
         #decoded message in string
@@ -202,7 +203,7 @@ class Api(object):
         return(json.dumps(reply))
 
     @cherrypy.expose
-    def checkmessages(self, since): 
+    def checkmessages(self, since=str(time.time())): 
         #change above line from since to a default value as well in case blank is passed into since  
         try:
             #message_decrypted = sealed_box.decrypt(message_received,encoder=nacl.encoding.HexEncoder)
@@ -212,16 +213,16 @@ class Api(object):
             array_m = retrieve_from_db_message(since)
             print(array_m)
             reply = { 
-            "response" : "ok",
-            "broadcasts" : array_b,
-            "private_messages" : array_m
+                "response" : "ok",
+                "broadcasts" : array_b,
+                "private_messages" : array_m
             }
             
             #message_gotten = m_decode
         except:
             #m_decode = "message couldn't be decrypted"
             reply = { 
-            "response" : "User is not sending data back"
+                "response" : "User is not sending data back"
             }
             #message_gotten = message['encrypted_message']
         
@@ -342,17 +343,17 @@ def report(username, passsword, status):
     verify_key = signing_key.verify_key
 
     # Serialize the verify key to send it to a third party
-    verify_key_hex = verify_key.encode(encoder=nacl.encoding.HexEncoder)
+    #verify_key_hex = verify_key.encode(encoder=nacl.encoding.HexEncoder)
 
     ####copied from hints
     pubkey_hex = signing_key.verify_key.encode(encoder=nacl.encoding.HexEncoder)
     pubkey_hex_str = pubkey_hex.decode('utf-8')
 
-    message_bytes = bytes(pubkey_hex_str, encoding='utf-8')
+    #message_bytes = bytes(pubkey_hex_str, encoding='utf-8')
 
-    signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
+    #signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
     #signature is basically hash. Used to verify pub key is related to private key
-    signature_hex_str = signed.signature.decode('utf-8')
+    #signature_hex_str = signed.signature.decode('utf-8')
     ####
 
     #create HTTP BASIC authorization header
@@ -457,6 +458,73 @@ def add_pubkey(username, password):
     JSON_object = json.loads(data.decode(encoding))
     print(JSON_object)
 
+def check_pubkey():
+    #STUDENT TO UPDATE THESE...
+    username = "ddhy609"
+    password = "DevashishDhyani_364084614"
+
+
+    #hex_key = signing_key.encode(encoder=nacl.encoding.HexEncoder)
+    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
+    print(hex_key)
+    #######
+
+
+    # Sign a message with the signing key
+
+    # Obtain the verify key for a given signing key
+    verify_key = signing_key.verify_key
+
+    # Serialize the verify key to send it to a third party
+    verify_key_hex = verify_key.encode(encoder=nacl.encoding.HexEncoder)
+
+    ####copied from hints
+    pubkey_hex = signing_key.verify_key.encode(encoder=nacl.encoding.HexEncoder)
+    pubkey_hex_str = pubkey_hex.decode('utf-8')
+
+
+    ##can be used to get details of passed pubkey
+    url = "http://cs302.kiwi.land/api/check_pubkey?pubkey="+pubkey_hex_str
+
+    message_bytes = bytes(pubkey_hex_str, encoding='utf-8')
+
+    signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
+    #signature is basically hash. Used to verify pub key is related to private key
+    signature_hex_str = signed.signature.decode('utf-8')
+    ####
+
+    #create HTTP BASIC authorization header
+    credentials = ('%s:%s' % (username, password))
+    b64_credentials = base64.b64encode(credentials.encode('ascii'))
+    headers = {
+        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'Content-Type' : 'application/json; charset=utf-8',
+    }
+
+    payload = {
+        #url has get request
+    }
+    payload = json.dumps(payload).encode('utf-8')
+
+    #STUDENT TO COMPLETE:
+    #1. convert the payload into json representation, 
+    #2. ensure the payload is in bytes, not a string
+
+    #3. pass the payload bytes into this function
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        response = urllib.request.urlopen(req)
+        data = response.read() # read the received bytes
+        encoding = response.info().get_content_charset('utf-8') #load encoding if possible (default to utf-8)
+        response.close()
+    except urllib.error.HTTPError as error:
+        print(error.read())
+        exit()
+
+    JSON_object = json.loads(data.decode(encoding))
+    print(JSON_object)
+
 def rx_broadcast(message):
     #########################################################3
     #cs302.kiwi.land needs to be replaced by IP address+ListeningPort of receiver
@@ -470,9 +538,6 @@ def rx_broadcast(message):
 
 
     #space after emoji required to allow for overlap b/w emoji and text
-    #message = "\U0001F637 " + "This works?"
-    #message = "FINALLY!"
-    # Generate a new random signing key
     hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
     signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
 
@@ -512,20 +577,9 @@ def rx_broadcast(message):
         "signature" : signature_hex_str
     }
 
-    #insert payload as a string
-    db_insert_broadcast(login_record, message, server_time, signature_hex_str, str(payload))
-
+   
     payload = json.dumps(payload).encode('utf-8')
 
-    ###insering into db
-    
-
-    ########
-
-    #1. convert the payload into json representation, 
-    #2. ensure the payload is in bytes, not a string
-
-    #3. pass the payload bytes into this function
     try:
         req = urllib.request.Request(url, data=payload, headers=headers)
         response = urllib.request.urlopen(req)
@@ -537,13 +591,56 @@ def rx_broadcast(message):
         exit()
 
     JSON_object = json.loads(data.decode(encoding))
-    print(JSON_object)     
 
-    
+    try:
+        if(JSON_object['response'] == "ok"): 
+            #insert payload as a string
+            db_insert_broadcast(login_record, message, server_time, signature_hex_str, str(payload))
+    except:
+        print("Not broadcasting to the given user")
+
+    print(JSON_object)      
+
+def list_users():
+    url = "http://cs302.kiwi.land/api/list_users"
+
+    #STUDENT TO UPDATE THESE...
+    username = "ddhy609"
+    password = "DevashishDhyani_364084614"
+
+    #create HTTP BASIC authorization header
+    credentials = ('%s:%s' % (username, password))
+    b64_credentials = base64.b64encode(credentials.encode('ascii'))
+    headers = {
+        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'Content-Type' : 'application/json; charset=utf-8',
+    }
+
+    payload = {
+        
+    }
+    payload = json.dumps(payload).encode('utf-8')
+
+    #STUDENT TO COMPLETE:
+    #1. convert the payload into json representation, 
+    #2. ensure the payload is in bytes, not a string
+
+    #3. pass the payload bytes into this function
+    try:
+        req = urllib.request.Request(url, headers=headers)
+        response = urllib.request.urlopen(req)
+        data = response.read() # read the received bytes
+        encoding = response.info().get_content_charset('utf-8') #load encoding if possible (default to utf-8)
+        response.close()
+    except urllib.error.HTTPError as error:
+        print(error.read())
+        exit()
+
+    JSON_object = json.loads(data.decode(encoding))
+    print(JSON_object)
+    return(JSON_object)
 
 def authoriseUserLogin(username, password):
-
-    print("Log on attempt from {0}:{1}".format(username, password))
 
     ping_response = ping(username, password)
     if(ping_response['signature'] == "ok" and ping_response['response'] == "ok"):
@@ -580,9 +677,6 @@ def rx_privatemessage (message):
 
     # Obtain the verify key for a given signing key
     verify_key = signing_key.verify_key
-
-
-
     
     # Serialize the verify key to send it to a third party
     #verify_key_hex = verify_key.encode(encoder=nacl.encoding.HexEncoder)
@@ -614,12 +708,6 @@ def rx_privatemessage (message):
     signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
     signature_hex_str = signed.signature.decode('utf-8')
 
-
-
-    #####3
-
-
-
     #create HTTP BASIC authorization header
     credentials = ('%s:%s' % (username, password))
     b64_credentials = base64.b64encode(credentials.encode('ascii'))
@@ -638,11 +726,6 @@ def rx_privatemessage (message):
     }
     payload = json.dumps(payload).encode('utf-8')
 
-    #STUDENT TO COMPLETE:
-    #1. convert the payload into json representation, 
-    #2. ensure the payload is in bytes, not a string
-
-    #3. pass the payload bytes into this function
     try:
         req = urllib.request.Request(url, data=payload, headers=headers)
         response = urllib.request.urlopen(req)
@@ -655,7 +738,6 @@ def rx_privatemessage (message):
 
     JSON_object = json.loads(data.decode(encoding))
     print(JSON_object)
-
 
 #creates a db and only creates table if not present
 def db_create_message():
@@ -746,85 +828,24 @@ def db_insert_broadcast(loginserver_record, message_value, sender_created_at, si
 
 #i doubt this is being used right now
 def get_user_pubkey_and_status (upi):
-    url = "http://cs302.kiwi.land/api/list_users"
+    users_object = list_users()
+
     upi = "fsan110"
+    
 
-    #STUDENT TO UPDATE THESE...
-    username = "ddhy609"
-    password = "DevashishDhyani_364084614"
-
-
-
-    #hex_key = signing_key.encode(encoder=nacl.encoding.HexEncoder)
-    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
-    signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
-    #print(hex_key)
-    #######
-
-
-    # Sign a message with the signing key
-
-    # Obtain the verify key for a given signing key
-    verify_key = signing_key.verify_key
-
-    # Serialize the verify key to send it to a third party
-    verify_key_hex = verify_key.encode(encoder=nacl.encoding.HexEncoder)
-
-    ####copied from hints
-    pubkey_hex = signing_key.verify_key.encode(encoder=nacl.encoding.HexEncoder)
-    pubkey_hex_str = pubkey_hex.decode('utf-8')
-
-    message_bytes = bytes(pubkey_hex_str, encoding='utf-8')
-
-    signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
-    #signature is basically hash. Used to verify pub key is related to private key
-    signature_hex_str = signed.signature.decode('utf-8')
-    ####
-
-    #create HTTP BASIC authorization header
-    credentials = ('%s:%s' % (username, password))
-    b64_credentials = base64.b64encode(credentials.encode('ascii'))
-    headers = {
-        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
-        'Content-Type' : 'application/json; charset=utf-8',
-    }
-
-    payload = {
-        
-    }
-    payload = json.dumps(payload).encode('utf-8')
-
-    #STUDENT TO COMPLETE:
-    #1. convert the payload into json representation, 
-    #2. ensure the payload is in bytes, not a string
-
-    #3. pass the payload bytes into this function
-    try:
-        req = urllib.request.Request(url, headers=headers)
-        response = urllib.request.urlopen(req)
-        data = response.read() # read the received bytes
-        encoding = response.info().get_content_charset('utf-8') #load encoding if possible (default to utf-8)
-        response.close()
-    except urllib.error.HTTPError as error:
-        print(error.read())
-        exit()
-
-    JSON_object = json.loads(data.decode(encoding))
-
-    #print(JSON_object)
-
-    all_users = JSON_object['users']
-    array_store = []
+    all_users = users_object['users']
+    #array_store = []
 
     for x in all_users :
-        array_store.append(x['username'])
+        #array_store.append(x['username'])
         if(x['username'] == upi):
             if(x['status'] == "online"):
                 print(x['incoming_pubkey'])
                 print("upi online")
+
                 break
 
-    print (array_store)
+    #print (array_store)
 
 def retrieve_from_db_message (since) :
     #create my.db if it does not exist, if exists just connects to it

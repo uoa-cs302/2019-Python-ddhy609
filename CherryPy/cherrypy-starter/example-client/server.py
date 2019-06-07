@@ -36,7 +36,9 @@ class MainApp(object):
     # PAGES (which return HTML that can be viewed in browser)
     @cherrypy.expose
     def index(self):
-        return self.login_page()
+        #return self.login_page()
+        return self.broadcast()
+
     ############################################
     #open the seperate page files
     @cherrypy.expose
@@ -44,8 +46,8 @@ class MainApp(object):
         return open("login.html")
 
     @cherrypy.expose
-    def home(self):
-        return open("piChat.html")
+    def broadcast(self):
+        return open("broadcast.html")
 
     @cherrypy.expose
     def messages(self):
@@ -56,12 +58,8 @@ class MainApp(object):
         return open("settings.html")
 
     @cherrypy.expose
-    def feed(self):
-        return open("feed.html")
-
-    @cherrypy.expose
-    def accountInfo(self):
-        return open("accountInfo.html")
+    def account_Info(self):
+        return open("account_Info.html")
 
     ###########################################
 
@@ -111,7 +109,24 @@ class MainApp(object):
     @cherrypy.expose
     def get_database_messages(self):
         #print(print_broadcast_messages())
-        return print_broadcast_messages()
+        return print_broadcast_messages_username()
+
+    @cherrypy.expose
+    def get_online_people(self):
+        JSON_object=list_users()
+        user_info=(JSON_object['users'])
+        user_list = []
+        
+        for x in user_info:
+            user_list.append(x['username']+ "/n")
+            """ #print("user detected  ")
+            print(x['username'])
+            if(x['username']=="crol453"):
+                return (x['connection_address']) """
+        
+        #users = str(users)
+        print(user_list)
+        return user_list
     
 ###########################################################33
 #main closes above
@@ -537,7 +552,8 @@ def rx_broadcast(message):
     #cs302.kiwi.land needs to be replaced by IP address+ListeningPort of receiver
     IPFeneel= "172.23.114.169:1234"
     IPAdmin = "210.54.33.182:80"
-    url = "http://"+ IPAdmin +"/api/rx_broadcast"
+    IPLaksh = "172.23.186.227:10001"
+    url = "http://"+ IPLaksh +"/api/rx_broadcast"
 
     #STUDENT TO UPDATE THESE...
     username = "ddhy609"
@@ -1181,7 +1197,7 @@ def ping_check():
 
     
 
-def print_broadcast_messages():
+def print_broadcast_messages_username():
     #create my.db if it does not exist, if exists just connects to it
     conn = sqlite3.connect("messages.db")
     #to interact with db get the cursor
@@ -1201,6 +1217,8 @@ def print_broadcast_messages():
                 
     array_message = []
     rows=c.fetchall()
+
+    
     string_message=""
     for row in rows:
         #converting to dictionary

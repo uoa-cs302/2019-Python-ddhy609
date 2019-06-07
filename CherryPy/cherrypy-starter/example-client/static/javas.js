@@ -5,31 +5,6 @@ var temp_data_array=[];
 
 $(document).ready(function(){
 
-    
-
-    //Feed
-    $("#tabFeed").on('click', function(){
-        /* $.get("/get_database_messages", function(data) {
-            //window.alert(data)
-            var data_array_value = data.split('/n')
-            var i;
-            $('#feed').append("<br>");
-            for (i = 0; i < data_array_value.length; i++) {
-                //text_array += data_array_value[i]
-                //$('#feed').html(text_array + "<br />") 
-                $('#feed').append(data_array_value[i] + '<br>')               
-            }
-            
-            //$('#feed').html(text_array + "<br />")
-        }); */
-    });
-
-    //Messages
-    $("#tabMessages").on('click', function(){
-        /*code-source: https://www.pair.com/support/kb/how-to-use-jquery-to-show-hide-a-form-on-click/ */
-        /*$("#messageBox").toggle()*/
-    });
-
     //Form information send
     $('form').on('submit', function(event) {
         // Prevent the page from reloading
@@ -78,25 +53,7 @@ $(document).ready(function(){
         return false;
     });
 
-    
-
-    //Account Info
-    $("#tabAccountInfo").on('click', function(){
-       
-    });
-
-    //Settings
-    $("#tabSettings").on('click', function(){
-        
-    });
-
-    //Home
-    $("#tabHome").on('click', function(){
-        
-    });
-
-
-    //Public Message (Broadcast)
+    //remove at end
     $("#headingTitle").on('click', function(){
           /*$.ajax({
             type: "GET",
@@ -153,15 +110,12 @@ function refreshDataFeed(){
 
        //getting new array
        var data_array_value = data.split('/n')
-       
        var arrLen = (data_array_value.length) - (temp_data_array.length)
        var length_oldDb = temp_data_array.length
-
        var i;
        
-       
        for (i = 0; i < arrLen; i++) {
-           $('#feed').append(data_array_value[length_oldDb+i] + '<br>'  )               
+           $('#braoadcastMessages').append(data_array_value[length_oldDb+i] + '<br>'  )               
        }
 
        //storing new array into old array
@@ -169,4 +123,30 @@ function refreshDataFeed(){
    });
 } 
 
-setInterval(refreshDataFeed, 30000);
+setInterval(refreshDataFeed, 5000);
+
+function userDisp(username){
+    $("#mainHeading").text("Message")
+    $("#mainHeading").append(" (" + username.id + ")")
+    /* console.log(user.id)
+    console.log("User printed")
+    window.alert(user.id) */
+}
+
+//display online users
+$("#online_Users").click(function(){
+    $.get("/get_online_people", function(data){
+        var user_lists = data.split("/n")
+        //window.alert(userElements)
+        $("#online_Users").html("Online Users:")
+        $("#online_Users").append("<br>" + "<br>")
+        for (var i = 0; i < user_lists.length; i++){
+            //$selectedUser = ("<a/>", {href:"#", onclick:userID(userElements[i]), id:userElements[i]});
+            //$("#onlineUsers").append("<a href=https://www.google.com>" + userElements[i] + "<br>")
+            //$("#onlineUsers").append($selectedUser)
+            $("#online_Users").append("<a href=# onclick=userDisp("+ user_lists[i] + ") " + "id="+user_lists[i]+">" + user_lists[i] + "<br>")
+            //;return false;
+        }
+    })
+    //window.alert($(this).id)
+});

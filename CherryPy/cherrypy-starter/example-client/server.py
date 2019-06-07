@@ -119,6 +119,13 @@ class MainApp(object):
 
 #class to handle receiving of apis (i.e. urls with /api)
 class Api(object):
+    #CherryPy Configuration
+    _cp_config = {'tools.encode.on': True, 
+                  'tools.encode.encoding': 'utf-8',
+                  'tools.sessions.on' : 'True',
+                 }       
+
+
     @cherrypy.expose
     def rx_broadcast(self):
         
@@ -325,8 +332,8 @@ def report(username, passsword, status):
     url = "http://cs302.kiwi.land/api/report"
 
     #STUDENT TO UPDATE THESE...
-    username = "ddhy609"
-    password = "DevashishDhyani_364084614"
+    #username = "ddhy609"
+    #password = "DevashishDhyani_364084614"
 
     ip_val = get_IP()
 
@@ -394,8 +401,8 @@ def add_pubkey(username, password):
     url = "http://cs302.kiwi.land/api/add_pubkey"
 
     #STUDENT TO UPDATE THESE...
-    username = "ddhy609"
-    password = "DevashishDhyani_364084614"
+    #username = "ddhy609"
+    #password = "DevashishDhyani_364084614"
 
 
     # Generate a new random signing key
@@ -592,6 +599,7 @@ def rx_broadcast(message):
 
     JSON_object = json.loads(data.decode(encoding))
 
+    #ensure that on braodcasting, you only enter your message once
     try:
         if(JSON_object['response'] == "ok"): 
             #insert payload as a string
@@ -652,7 +660,7 @@ def authoriseUserLogin(username, password):
     #for succesful login, return 0
     #print(store_ping_response)
 
-
+#targetpubkeys and all that stuff needs to be passed as inputs here
 def rx_privatemessage (message):
 ##need to update later to allow for user to user messaging. Atm, just hammonds client.
     url = "http://172.23.114.169:1234/api/rx_privatemessage"   #rx_privatemessage"
@@ -847,6 +855,7 @@ def get_user_pubkey_and_status (upi):
 
     #print (array_store)
 
+#need to run a loop to check for only entries after SINCE
 def retrieve_from_db_message (since) :
     #create my.db if it does not exist, if exists just connects to it
     conn = sqlite3.connect("messages.db")

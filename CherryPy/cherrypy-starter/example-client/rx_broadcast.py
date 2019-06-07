@@ -7,9 +7,10 @@ import time
 
 
 #cs302.kiwi.land needs to be replaced by IP address+ListeningPort of receiver
-IP= "172.23.114.169:1234"
+IP= "172.23.114.169:10050"
+IP_laksh = "172.23.186.227:1234"
 ip_rshi = "172.23.103.37:1234"
-url = "http://"+ IP +"/api/rx_broadcast"
+url = "http://172.23.103.37:10002/api/rx_broadcast"
 
 #STUDENT TO UPDATE THESE...
 username = "ddhy609"
@@ -51,6 +52,7 @@ headers = {
     'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
     'Content-Type' : 'application/json; charset=utf-8',
 }
+
 
 payload = {
     "loginserver_record" : login_record,

@@ -5,7 +5,7 @@ import nacl.signing
 import nacl.encoding
 import time
 
-url = "http://172.23.114.169:1234/api/ping_check"
+url = "http://172.23.186.227:10001/api/ping_check"
 
 #STUDENT TO UPDATE THESE...
 username = "ddhy609"
@@ -22,7 +22,7 @@ headers = {
 payload = {
     "my_time" : str(time.time()),
     #"my_active_usernames" : username,
-    "connection_address" : "172.23.118.149:1234",
+    "connection_address" : "172.23.118.149:10013",
     #"connection_address" : "127.0.0.1:8000",
 	"connection_location" : 1
 }

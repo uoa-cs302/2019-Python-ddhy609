@@ -6,7 +6,7 @@ import nacl.encoding
 import time
 
 ##need to update later to allow for user to user messaging. Atm, just hammonds client.
-url = "http://172.23.103.37:10002/api/rx_privatemessage"   #rx_privatemessage"
+url = "http://172.23.186.227:10001/api/rx_privatemessage"   #rx_privatemessage"
 #rishab http://172.23.103.37:1234
 # satnam 172.23.25.90
 
@@ -17,8 +17,8 @@ url = "http://172.23.103.37:10002/api/rx_privatemessage"   #rx_privatemessage"
 #rishab rgos933 pubkey = 296f04cbb7880da29b46498309903368d9f495f789128969e5334c82ea81d1d3
 #kazuki ksae900 pubkey = f836622ebbab8cae02ddb9175ac08d771152591b9333d5ca5f5e9424db94b0ad
 #satnam sbha375 pubkey = 296f04cbb7880da29b46498309903368d9f495f789128969e5334c82ea81d1d3
-target_pubkey = "296f04cbb7880da29b46498309903368d9f495f789128969e5334c82ea81d1d3"
-target_username = "rgos933"
+target_pubkey = "d76697455341f10649c6ac6241db51c3cc5a2bb9212384b0b3b21bddca1f6a87"
+target_username = "lobe655"
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
 

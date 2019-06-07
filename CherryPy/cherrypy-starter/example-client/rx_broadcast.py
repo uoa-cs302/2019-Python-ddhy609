@@ -10,7 +10,7 @@ import time
 IP= "172.23.114.169:10050"
 IP_laksh = "172.23.186.227:1234"
 ip_rshi = "172.23.103.37:1234"
-url = "http://172.23.103.37:10002/api/rx_broadcast"
+url = "http://172.23.186.227:10001/api/rx_broadcast"
 
 #STUDENT TO UPDATE THESE...
 username = "ddhy609"

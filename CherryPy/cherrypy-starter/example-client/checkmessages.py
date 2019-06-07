@@ -6,8 +6,8 @@ import nacl.signing
 
 Time =1558765969.000000
 #STUDENT TO UPDATE THESE...
-username = "fsan110"
-password = "fsan110_586762257"
+username = "ddhy609"
+password = "DevashishDhyani_364084614"
 private_key =b'747c96a47d361798c8bfc0e3fd7327260fd3d926a9d6020cd173681ad3601d42'
 private_key=nacl.signing.SigningKey(private_key, encoder=nacl.encoding.HexEncoder)
 #public key
@@ -25,7 +25,7 @@ b64_credentials = base64.b64encode(credentials.encode('ascii'))
 #url = "http://cs302.kiwi.land/api/checkmessages?since="+(Time)
 #kazuki 172.23.46.106:1234
 #feneel 172.23.114.169
-url= "http://172.23.114.169:1234/api/checkmessages?since="+str(Time) #dev
+url= "http://172.23.186.227:10001/api/checkmessages?since="+str(Time) #dev
 
 
 headers = {

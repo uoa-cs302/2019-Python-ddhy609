@@ -154,14 +154,14 @@ class Api(object):
             reply = { 
                 "response" : "ok"
             }
-
+ 
 
             loginserver_record= total_data['loginserver_record']
 
-            if(loginserver_record[0:4] == "admin"):
+            if(loginserver_record[0:4] == "admin" or loginserver_record[0:5] == "admin"):
                 upi = "admin"
             else:
-                upi = loginserver_record[0:6]
+                upi = loginserver_record[0:7]
             
             message_value = total_data['message']
             sender_created_at = total_data['sender_created_at']
@@ -1222,36 +1222,23 @@ def print_broadcast_messages_username():
     # SQL INJECTION HANDLED by passing in username and password and using ?? 
     c.execute("""
             SELECT 
-            message from broadcast""") 
+            upi,message from broadcast""") 
             #WHERE sender_created_at=?  
             #""",(since)
             #    )
                 
     rows=c.fetchall()
 
-    c.execute("""
-            SELECT 
-            loginserver_record from broadcast""")
-    
-    columns=c.fetchall()
+    string_message=""  
 
-    string_message=""
-    string_upi=""
-    string_combined=""
-
-    for row in rows:
+    #reversed
+    for row in reversed(rows):
         #converting to dictionary
         #y=eval(row[0])    
-        string_message = string_message + row[0] + "/n"
+        string_message = string_message + row[0] + ":" + row[1] + "/n"
         #string_upi = string_upi + column[0] + "/n"
         #string_combined = string_combined +string_message+string_upi
-
-    for column in columns:
-        #converting to dictionary
-        #y=eval(row[0])    
-        temp_col = column[0]
-
-        string_upi = string_upi + column[0] + "/n"    
+  
 
     #getting the values out becoz for some reason I have a double array
     #array_broadcast = array_broadcast[0]
@@ -1263,6 +1250,4 @@ def print_broadcast_messages_username():
     
     #going from 0 to -2 to get rid of the last /n value
     string_message = string_message[0:-2]
-    string_upi = string_upi[0:-2]
-    string_combined = string_message + string_upi
     return (string_message)

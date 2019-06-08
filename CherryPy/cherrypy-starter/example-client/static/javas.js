@@ -2,6 +2,7 @@
 
 //global variable storing last db for easy update
 var temp_data_array=[];
+var reverse_try = 0;
 
 $(document).ready(function(){
 
@@ -104,19 +105,30 @@ $(document).ready(function(){
 
 function refreshDataFeed(){
     //$('#feed').html("");
-    console.log("refresh being called")
+    //console.log("refresh being called")
 
     $.get("/get_database_messages", function(data) {
-        window.alert(data)
+        //window.alert(data)
        //getting new array
        var data_array_value = data.split('/n')
        var arrLen = (data_array_value.length) - (temp_data_array.length)
        var length_oldDb = temp_data_array.length
        var i;
        
-       for (i = 0; i < arrLen; i++) {
-           $('#braoadcastMessages').append(data_array_value[length_oldDb+i] + '<br>'  )               
-       }
+        if(reverse_try ==1){
+            for (i = 0; i < arrLen; i++) {
+                $('#broadcastMessages').prepend(data_array_value[i] + '<br>')
+            }
+        } 
+        
+       //$('#broadcastMessages').html("")
+        if(reverse_try ==0) {
+            for (i = 0; i < arrLen; i++) {
+                $('#broadcastMessages').append(data_array_value[i] + '<br>')
+            }
+            reverse_try =1;
+        }
+ 
 
        //storing new array into old array
        temp_data_array = data_array_value

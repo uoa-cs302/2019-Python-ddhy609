@@ -107,7 +107,7 @@ function refreshDataFeed(){
     console.log("refresh being called")
 
     $.get("/get_database_messages", function(data) {
-
+        window.alert(data)
        //getting new array
        var data_array_value = data.split('/n')
        var arrLen = (data_array_value.length) - (temp_data_array.length)

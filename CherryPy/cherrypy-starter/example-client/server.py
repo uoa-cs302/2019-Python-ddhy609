@@ -148,6 +148,7 @@ class Api(object):
             #json.loads  = loads json object
             #cherry.request.body.read  = requesting url and reading payload
             total_data = json.loads(cherrypy.request.body.read().decode('utf-8'))
+            print(type(total_data))
             print(total_data)
 
             reply = { 
@@ -156,13 +157,19 @@ class Api(object):
 
 
             loginserver_record= total_data['loginserver_record']
+
+            if(loginserver_record[0:4] == "admin"):
+                upi = "admin"
+            else:
+                upi = loginserver_record[0:6]
+            
             message_value = total_data['message']
             sender_created_at = total_data['sender_created_at']
             signature = total_data['signature']
 
             total_data = str(total_data)
             db_create_broadcast()
-            db_insert_broadcast(loginserver_record, message_value, sender_created_at, signature, total_data)
+            db_insert_broadcast(loginserver_record, upi, message_value, sender_created_at, signature, total_data)
         
         except :
             reply = { 
@@ -582,6 +589,8 @@ def rx_broadcast(message):
     server_time= str(time.time())
     message_bytes = bytes(login_record + message + server_time, encoding='utf-8')
 
+    
+
     signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
     signature_hex_str = signed.signature.decode('utf-8')
 
@@ -615,16 +624,18 @@ def rx_broadcast(message):
 
     JSON_object = json.loads(data.decode(encoding))
 
+    #may need a workaround stroing username later
+    upi = username
     #ensure that on braodcasting, you only enter your message once
-    try:
+    try:  
         if(JSON_object['response'] == "ok"): 
             #insert payload as a string
-            db_insert_broadcast(login_record, message, server_time, signature_hex_str, str(payload))
+            db_insert_broadcast(login_record, upi, message, server_time, signature_hex_str, payload)
     except:
         print("Not broadcasting to the given user")
 
     print(JSON_object)      
-
+   
 def list_users():
     url = "http://cs302.kiwi.land/api/list_users"
 
@@ -801,6 +812,7 @@ def db_create_broadcast():
     c.execute("""
                 create table if not exists broadcast (id integer primary key autoincrement not null,
                 loginserver_record text not null,
+                upi text not null,
                 message text,
                 sender_created_at text not null,
                 signature text not null,
@@ -835,15 +847,15 @@ def db_insert_message(loginserver_record, target_pubkey, target_username, messag
     conn.close()
 
 
-def db_insert_broadcast(loginserver_record, message_value, sender_created_at, signature, total_data):
+def db_insert_broadcast(loginserver_record, upi, message_value, sender_created_at, signature, total_data):
     #create my.db if it does not exist, if exists just connects to it
     conn = sqlite3.connect("messages.db")
     #to interact with db get the cursor
     c=conn.cursor()
 
 
-    c.execute(" insert into broadcast (loginserver_record, message,sender_created_at, signature, total_data) values (?,?,?,?,?)",
-                  (loginserver_record, message_value, sender_created_at, signature, total_data))
+    c.execute(" insert into broadcast (loginserver_record, upi, message,sender_created_at, signature, total_data) values (?,?,?,?,?,?)",
+                  (loginserver_record, upi, message_value, sender_created_at, signature, total_data))
  
     conn.commit()            
 
@@ -1215,17 +1227,31 @@ def print_broadcast_messages_username():
             #""",(since)
             #    )
                 
-    array_message = []
     rows=c.fetchall()
 
+    c.execute("""
+            SELECT 
+            loginserver_record from broadcast""")
     
+    columns=c.fetchall()
+
     string_message=""
+    string_upi=""
+    string_combined=""
+
     for row in rows:
         #converting to dictionary
         #y=eval(row[0])    
-        array_message.append(row[0])
         string_message = string_message + row[0] + "/n"
-        
+        #string_upi = string_upi + column[0] + "/n"
+        #string_combined = string_combined +string_message+string_upi
+
+    for column in columns:
+        #converting to dictionary
+        #y=eval(row[0])    
+        temp_col = column[0]
+
+        string_upi = string_upi + column[0] + "/n"    
 
     #getting the values out becoz for some reason I have a double array
     #array_broadcast = array_broadcast[0]
@@ -1237,4 +1263,6 @@ def print_broadcast_messages_username():
     
     #going from 0 to -2 to get rid of the last /n value
     string_message = string_message[0:-2]
+    string_upi = string_upi[0:-2]
+    string_combined = string_message + string_upi
     return (string_message)

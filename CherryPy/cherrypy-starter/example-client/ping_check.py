@@ -5,7 +5,7 @@ import nacl.signing
 import nacl.encoding
 import time
 
-url = "http://172.23.186.227:10001/api/ping_check"
+url = "http://192.168.20.4:80/api/ping_check"
 
 #STUDENT TO UPDATE THESE...
 username = "ddhy609"

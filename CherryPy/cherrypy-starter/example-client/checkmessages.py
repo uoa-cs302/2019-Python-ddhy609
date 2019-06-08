@@ -8,7 +8,7 @@ Time =1558765969.000000
 #STUDENT TO UPDATE THESE...
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
-private_key =b'747c96a47d361798c8bfc0e3fd7327260fd3d926a9d6020cd173681ad3601d42'
+private_key =b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
 private_key=nacl.signing.SigningKey(private_key, encoder=nacl.encoding.HexEncoder)
 #public key
 public_key=private_key.verify_key
@@ -24,33 +24,39 @@ b64_credentials = base64.b64encode(credentials.encode('ascii'))
 
 #url = "http://cs302.kiwi.land/api/checkmessages?since="+(Time)
 #kazuki 172.23.46.106:1234
-#feneel 172.23.114.169
-url= "http://172.23.186.227:10001/api/checkmessages?since="+str(Time) #dev
+url= "http://172.23.114.169:10050/api/checkmessages?since="+str(Time) #dev
 
 
 headers = {
     'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
     'Content-Type' : 'application/json; charset=utf-8',
 }
+
 payload ={
     ##GET REQUEST NO PAYLOAD
 }
 
-A=json.dumps(payload).encode('utf-8')
+try:
+    A=json.dumps(payload).encode('utf-8')
 
-req = urllib.request.Request(url,data=A,headers=headers)
-response = urllib.request.urlopen(req)
+    req = urllib.request.Request(url,data=A,headers=headers)
+    response = urllib.request.urlopen(req)
 
-data = response.read() # read the received bytes
-encoding = response.info().get_content_charset('utf-8')
+    data = response.read() # read the received bytes
+    encoding = response.info().get_content_charset('utf-8')
 
 
-JSON_object = json.loads(data.decode(encoding))
-#print(JSON_object)
+    JSON_object = json.loads(data.decode(encoding))
+    response.close()
+    print(JSON_object)
 
-broadcast_data = JSON_object['broadcasts']
-message_data = JSON_object['private_messages']
+    broadcast_data = JSON_object['broadcasts']
+    message_data = JSON_object['private_messages']
 
-print(broadcast_data)
-print(message_data)
-response.close()
+    #need to store x as a string since its a Json object and sql only likes strings
+except:
+    print("Can't insert for this user")
+
+#print(broadcast_data)
+
+

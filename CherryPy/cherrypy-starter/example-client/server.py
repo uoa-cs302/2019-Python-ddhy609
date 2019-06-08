@@ -13,6 +13,7 @@ import subprocess
 import shlex
 from subprocess import check_output
 import nacl.pwhash
+import socket
 
 startHTML = "<html><head><title>CS302 example</title><link rel='stylesheet' href='/static/example.css' /></head><body>"
 
@@ -105,16 +106,25 @@ class MainApp(object):
     def tx_broadcast(self,message):
         #print(message)
         list_connection = list_online_users()
+        insert_flag=1
 
         for x in list_connection:
             try:
+                #if(x=="192.168.20.4:80" or x=="172.23.72.183:12345"):
+                #    continue  
+                
+                print("ping check this ip \n")
+                print(x)
                 responding = ping_check(x)
+                if(responding['response'] == "ok"):
+                    rx_broadcast(message,x, insert_flag)
+                    insert_flag=0
+                    print("Broadcasting")
             except:
+                print("try.catch activated")
                 continue
 
-            if(responding['response'] == "ok"):
-                rx_broadcast(message,x)
-
+            
         
 
     @cherrypy.expose
@@ -565,7 +575,7 @@ def check_pubkey():
     JSON_object = json.loads(data.decode(encoding))
     print(JSON_object)
 
-def rx_broadcast(message, ip_user):
+def rx_broadcast(message, ip_user, insert_flag):
     #########################################################3
     #cs302.kiwi.land needs to be replaced by IP address+ListeningPort of receiver
     IPFeneel= "172.23.114.169:1234"
@@ -640,8 +650,9 @@ def rx_broadcast(message, ip_user):
     #ensure that on braodcasting, you only enter your message once
     try:  
         if(JSON_object['response'] == "ok"): 
+            if(insert_flag == 1):
             #insert payload as a string
-            db_insert_broadcast(login_record, upi, message, server_time, signature_hex_str, payload)
+                db_insert_broadcast(login_record, upi, message, server_time, signature_hex_str, payload)
     except:
         print("Not broadcasting to the given user")
 
@@ -994,41 +1005,50 @@ def checkmessages():
         ##GET REQUEST NO PAYLOAD
     }
 
-    A=json.dumps(payload).encode('utf-8')
+    try:
+        A=json.dumps(payload).encode('utf-8')
 
-    req = urllib.request.Request(url,data=A,headers=headers)
-    response = urllib.request.urlopen(req)
+        req = urllib.request.Request(url,data=A,headers=headers)
+        response = urllib.request.urlopen(req)
 
-    data = response.read() # read the received bytes
-    encoding = response.info().get_content_charset('utf-8')
+        data = response.read() # read the received bytes
+        encoding = response.info().get_content_charset('utf-8')
 
 
-    JSON_object = json.loads(data.decode(encoding))
-    #print(JSON_object)
+        JSON_object = json.loads(data.decode(encoding))
+        #print(JSON_object)
 
-    broadcast_data = JSON_object['broadcasts']
-    message_data = JSON_object['private_messages']
+        broadcast_data = JSON_object['broadcasts']
+        message_data = JSON_object['private_messages']
 
-    #need to store x as a string since its a Json object and sql only likes strings
-    for x in broadcast_data:
-        loginserver_record = x['loginserver_record']
-        message = x['message']
-        sender_created_at = x['sender_created_at']
-        signature = x['signature']
+        #need to store x as a string since its a Json object and sql only likes strings
+        for x in broadcast_data:
+            loginserver_record = x['loginserver_record']
+            message = x['message']
+            sender_created_at = x['sender_created_at']
+            signature = x['signature']
 
-        db_insert_broadcast(loginserver_record,message,sender_created_at,signature,str(x))
-     
+            #need a way to insert upi here
+            if(loginserver_record[0:4] == "admin" or loginserver_record[0:5] == "admin"):
+                upi = "admin"
+            else:
+                upi = loginserver_record[0:7]
 
-    for x in message_data:
-        loginserver_record = x['loginserver_record']
-        target_pubkey = x['target_pubkey']
-        target_username = x['target_username']
-        encrypted_message = x['encrypted_message']
-        sender_created_at = x['sender_created_at']
-        signature = x['signature']
+            db_insert_broadcast(loginserver_record, upi, message, sender_created_at, signature, str(x))
+        
 
-        db_insert_message(loginserver_record, target_pubkey, target_username, encrypted_message, sender_created_at, signature ,str(x))
+        for x in message_data:
+            loginserver_record = x['loginserver_record']
+            target_pubkey = x['target_pubkey']
+            target_username = x['target_username']
+            encrypted_message = x['encrypted_message']
+            sender_created_at = x['sender_created_at']
+            signature = x['signature']
 
+            db_insert_message(loginserver_record, target_pubkey, target_username, encrypted_message, sender_created_at, signature ,str(x))
+
+    except:
+        print("Can't insert for this user")
 
     #print(broadcast_data)
     response.close()
@@ -1189,31 +1209,29 @@ def ping_check(ip):
     payload = {
         "my_time" : str(time.time()),
         #"my_active_usernames" : username,
-        "connection_address" : "172.23.118.149:10013",
+        "connection_address" : "172.23.106.138:10013",
         #"connection_address" : "127.0.0.1:8000",
         "connection_location" : 1
     }
 
     payload = json.dumps(payload).encode('utf-8')
 
-    #STUDENT TO COMPLETE:
-    #1. convert the payload into json representation, 
-    #2. ensure the payload is in bytes, not a string
-
-    #3. pass the payload bytes into this function
     try:
+        #req = urllib.request.Request(url, data=payload, headers=headers)
         req = urllib.request.Request(url, data=payload, headers=headers)
-        response = urllib.request.urlopen(req)
+        response = urllib.request.urlopen(req, timeout=10)
         data = response.read() # read the received bytes
         encoding = response.info().get_content_charset('utf-8') #load encoding if possible (default to utf-8)
         response.close()
-    except urllib.error.HTTPError as error:
-        print(error.read())
-        exit()
-
-    JSON_object = json.loads(data.decode(encoding))
-    print(JSON_object)
-    return JSON_object
+        JSON_object = json.loads(data.decode(encoding))
+        print(JSON_object)
+        print("try of ping_check")
+        return JSON_object
+    except:
+        print("ping_check exception")
+        print(json.dumps({'response': "not ok"}))
+        return (json.dumps({'response': "not ok"}))
+    
 
 def list_online_users():
     user_list = []
@@ -1229,6 +1247,9 @@ def list_online_users():
 
         print(user_list)
         print(user_ip)
+        print(len(user_info))
+        print(len(user_list))
+        print(len(user_ip))      
          
     except:
         print("Cant retrieve users")

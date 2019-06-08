@@ -124,7 +124,20 @@ class MainApp(object):
                 print("try.catch activated")
                 continue
 
-            
+    @cherrypy.expose
+    def send_private_message(self, parcel):
+        # json.loads to convert JSON array to python list
+        response = json.loads(parcel)
+        print(response)
+        upi = response[0]
+        message = response[1]
+        print("UPI FOUND!!!")
+        #this gives ip and pkey 
+        ip_address_gotten, pkey = get_user_ip_address(upi) 
+        print(ip_address_gotten)
+        print(upi)
+        print(message)
+        rx_privatemessage(message, ip_address_gotten, pkey, upi)
         
 
     @cherrypy.expose
@@ -695,6 +708,8 @@ def list_users():
 
     JSON_object = json.loads(data.decode(encoding))
     print(JSON_object)
+    print("List users in")
+    print("\n")
     return(JSON_object)
 
 def authoriseUserLogin(username, password):
@@ -710,16 +725,16 @@ def authoriseUserLogin(username, password):
     #print(store_ping_response)
 
 #targetpubkeys and all that stuff needs to be passed as inputs here
-def rx_privatemessage (message):
+def rx_privatemessage (message, ip_add, pkey, upi):
 ##need to update later to allow for user to user messaging. Atm, just hammonds client.
-    url = "http://172.23.114.169:1234/api/rx_privatemessage"   #rx_privatemessage"
+    url = "http://"+ ip_add + "/api/rx_privatemessage"   #rx_privatemessage"
 
 
     message = bytes(message,encoding='utf-8')
     #oberoi pubkey = d76697455341f10649c6ac6241db51c3cc5a2bb9212384b0b3b21bddca1f6a87
     #feneel pubkey = 78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e
-    target_pubkey = "78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e"
-    target_username = "fsan110"
+    target_pubkey = pkey
+    target_username = upi
     username = "ddhy609"
     password = "DevashishDhyani_364084614"
 
@@ -945,7 +960,7 @@ def retrieve_from_db_broadcast (since) :
     # SQL INJECTION HANDLED by passing in username and password and using ?? 
     c.execute("""
             SELECT 
-            total_data from broadcast""") 
+            total_data, sender_created_at from broadcast""") 
             #WHERE sender_created_at=?  
             #""",(since)
             #    )
@@ -954,8 +969,10 @@ def retrieve_from_db_broadcast (since) :
     rows=c.fetchall()
     for row in rows:
         #converting to dictionary
-        y=eval(row[0])    
-        array_broadcast.append(y)
+        y=eval(row[0]) 
+        z=row[1]
+        if(float(z) > float(since)):  
+            array_broadcast.append(y)
 
     #getting the values out becoz for some reason I have a double array
     #array_broadcast = array_broadcast[0]
@@ -1219,7 +1236,7 @@ def ping_check(ip):
     try:
         #req = urllib.request.Request(url, data=payload, headers=headers)
         req = urllib.request.Request(url, data=payload, headers=headers)
-        response = urllib.request.urlopen(req, timeout=10)
+        response = urllib.request.urlopen(req, timeout=2)
         data = response.read() # read the received bytes
         encoding = response.info().get_content_charset('utf-8') #load encoding if possible (default to utf-8)
         response.close()
@@ -1257,6 +1274,22 @@ def list_online_users():
     #users = str(users)
     return (user_ip)   
 
+
+def get_user_ip_address (upi):
+    users_object = list_users()
+    all_users = users_object['users']
+    value_connect = 0
+    value_targetpkey = 0
+
+    for x in all_users :
+        #array_store.append(x['username'])
+        if(x['username'] == upi):
+            if(x['status'] == "online"):
+                value_connect=(x['connection_address'])
+                value_targetpkey = x(['incoming_pubkey'])
+
+    return value_connect, value_targetpkey
+
 def print_broadcast_messages_username():
     #create my.db if it does not exist, if exists just connects to it
     conn = sqlite3.connect("messages.db")
@@ -1283,7 +1316,7 @@ def print_broadcast_messages_username():
     for row in reversed(rows):
         #converting to dictionary
         #y=eval(row[0])    
-        string_message = string_message + row[0] + ":" + row[1] + "/n"
+        string_message = string_message + row[0] + " : " + row[1] + "/n" + "/n"
         #string_upi = string_upi + column[0] + "/n"
         #string_combined = string_combined +string_message+string_upi
   

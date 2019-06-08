@@ -7,7 +7,7 @@ var reverse_try = 0;
 $(document).ready(function(){
 
     //Form information send
-    $('form').on('submit', function(event) {
+    $('#boxBroadcast').on('submit', function(event) {
         // Prevent the page from reloading
         //event.preventDefault();
         
@@ -25,6 +25,8 @@ $(document).ready(function(){
                 window.alert("Couldn't send message")
             }
         })
+
+        
 
         //$('#feed').html("");
         /* $.get("/get_database_messages", function(data) {
@@ -45,12 +47,43 @@ $(document).ready(function(){
             //storing new array into old array
             temp_data_array = data_array_value
         }); */
+        $("#send_text").val("")
         refreshDataFeed()
       /*   var xhr = new XMLHttpRequest();
         xhr.open('POST','/tx_broadcast',true);
         //xhr.withCredentials = false;
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhr.send("message="+input); */
+        return false;
+    });
+
+
+    $('#boxMessage').on('submit', function(event) {
+        // Prevent the page from reloading
+        //event.preventDefault();
+        
+        // Set the text-output span to the value of the first input
+        var $input = $(this).find('input');
+        var input = $input.val();
+          
+        //$('#text-output').text("You typed: " + input);
+        window.alert(userUPI + input)
+
+        // JSON.stringify prevents AJAX from processing DATA 
+        parcel = JSON.stringify([userUPI, input])
+        // @Note - NAME input parameter of python same as ajax
+        // i.e "parcel="
+        //upi, message
+        $.ajax({
+            type: "POST",
+            url: "/send_private_message",
+            data: "parcel="+parcel,
+            error : function(){
+                window.alert("Couldn't send message to selected user")
+            }
+        })
+        $("#send_text").val("")
+ 
         return false;
     });
 
@@ -115,7 +148,7 @@ function refreshDataFeed(){
        var length_oldDb = temp_data_array.length
        var i;
        
-        if(reverse_try ==1){
+        if(reverse_try ==1) {
             for (i = 0; i < arrLen; i++) {
                 $('#broadcastMessages').prepend(data_array_value[i] + '<br>')
             }
@@ -137,9 +170,12 @@ function refreshDataFeed(){
 
 setInterval(refreshDataFeed, 5000);
 
+var userUPI
+
 function userDisp(username){
     $("#mainHeading").text("Message")
     $("#mainHeading").append(" (" + username.id + ")")
+    userUPI = username.id
     /* console.log(user.id)
     console.log("User printed")
     window.alert(user.id) */

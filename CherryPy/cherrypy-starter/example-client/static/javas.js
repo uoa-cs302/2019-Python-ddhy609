@@ -70,14 +70,15 @@ $(document).ready(function(){
         window.alert(userUPI + input)
 
         // JSON.stringify prevents AJAX from processing DATA 
-        parcel = JSON.stringify([userUPI, input])
+        ////parcel = JSON.stringify([userUPI, input])
+
         // @Note - NAME input parameter of python same as ajax
         // i.e "parcel="
         //upi, message
         $.ajax({
             type: "POST",
             url: "/send_private_message",
-            data: "parcel="+parcel,
+            data: {upi : userUPI, message : input},
             error : function(){
                 window.alert("Couldn't send message to selected user")
             }
@@ -192,7 +193,7 @@ $("#online_Users").click(function(){
             //$selectedUser = ("<a/>", {href:"#", onclick:userID(userElements[i]), id:userElements[i]});
             //$("#onlineUsers").append("<a href=https://www.google.com>" + userElements[i] + "<br>")
             //$("#onlineUsers").append($selectedUser)
-            $("#online_Users").append("<a href=# onclick=userDisp("+ user_lists[i] + ") " + "id="+user_lists[i]+">" + user_lists[i] + "<br>")
+            $("#online_Users").append("<a onclick=userDisp("+ user_lists[i] + ") " + "id="+user_lists[i]+">" + user_lists[i] + "<br>")
             //;return false;
         }
     })

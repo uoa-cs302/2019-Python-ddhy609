@@ -125,14 +125,17 @@ class MainApp(object):
                 continue
 
     @cherrypy.expose
-    def send_private_message(self, parcel):
+    def send_private_message(self, upi, message):
+        print("\n \n \n \n \n \n made it inside the function!!! \n \n \n \n \n \n")
+        print(upi + "," + message)
         # json.loads to convert JSON array to python list
-        response = json.loads(parcel)
-        print(response)
-        upi = response[0]
-        message = response[1]
-        print("UPI FOUND!!!")
+        #response = json.loads(parcel)
+        #print(response)
+        #upi = response[0]
+        #message = response[1]
+        #print("UPI FOUND!!!")
         #this gives ip and pkey 
+        
         ip_address_gotten, pkey = get_user_ip_address(upi) 
         print(ip_address_gotten)
         print(upi)
@@ -159,7 +162,7 @@ class MainApp(object):
                 return (x['connection_address']) """
         
         #users = str(users)
-        print(user_list)
+        #print(user_list)
         return user_list
     
 ###########################################################33
@@ -707,7 +710,7 @@ def list_users():
         exit()
 
     JSON_object = json.loads(data.decode(encoding))
-    print(JSON_object)
+    #print(JSON_object)
     print("List users in")
     print("\n")
     return(JSON_object)
@@ -1226,7 +1229,7 @@ def ping_check(ip):
     payload = {
         "my_time" : str(time.time()),
         #"my_active_usernames" : username,
-        "connection_address" : "172.23.106.138:10013",
+        "connection_address" : "192.168.1.74:10013",
         #"connection_address" : "127.0.0.1:8000",
         "connection_location" : 1
     }
@@ -1236,7 +1239,7 @@ def ping_check(ip):
     try:
         #req = urllib.request.Request(url, data=payload, headers=headers)
         req = urllib.request.Request(url, data=payload, headers=headers)
-        response = urllib.request.urlopen(req, timeout=2)
+        response = urllib.request.urlopen(req, timeout=1)
         data = response.read() # read the received bytes
         encoding = response.info().get_content_charset('utf-8') #load encoding if possible (default to utf-8)
         response.close()
@@ -1278,6 +1281,7 @@ def list_online_users():
 def get_user_ip_address (upi):
     users_object = list_users()
     all_users = users_object['users']
+    print(all_users)
     value_connect = 0
     value_targetpkey = 0
 
@@ -1286,7 +1290,7 @@ def get_user_ip_address (upi):
         if(x['username'] == upi):
             if(x['status'] == "online"):
                 value_connect=(x['connection_address'])
-                value_targetpkey = x(['incoming_pubkey'])
+                value_targetpkey = (x['incoming_pubkey'])
 
     return value_connect, value_targetpkey
 

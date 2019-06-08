@@ -1230,7 +1230,7 @@ def print_broadcast_messages_username():
     rows=c.fetchall()
 
     string_message=""  
-
+    string_example = "example"
     #reversed
     for row in reversed(rows):
         #converting to dictionary

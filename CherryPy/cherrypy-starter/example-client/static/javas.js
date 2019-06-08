@@ -67,7 +67,7 @@ $(document).ready(function(){
         var input = $input.val();
           
         //$('#text-output').text("You typed: " + input);
-        window.alert(userUPI + input)
+        //window.alert(userUPI + input)
 
         // JSON.stringify prevents AJAX from processing DATA 
         ////parcel = JSON.stringify([userUPI, input])

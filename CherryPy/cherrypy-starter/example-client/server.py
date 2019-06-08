@@ -115,11 +115,18 @@ class MainApp(object):
                 
                 print("ping check this ip \n")
                 print(x)
+                print(type(x))
                 responding = ping_check(x)
+                print(responding)
+                print(type(responding))
                 if(responding['response'] == "ok"):
+                    print("entered if")
+                    #have a condition here later which checks for sending to self and avoid that
+                    #something like if x==my_ip
                     rx_broadcast(message,x, insert_flag)
+                    print("after broadcast \n")
                     insert_flag=0
-                    print("Broadcasting")
+                    #print("Broadcasting")
             except:
                 print("try.catch activated")
                 continue
@@ -210,7 +217,7 @@ class Api(object):
         
         except :
             reply = { 
-                "response" : "not ok"
+                "response" : "error"
             }
 
 
@@ -304,7 +311,7 @@ class Api(object):
             }
         except:
             reply = {
-                "response" : "Not correct",
+                "response" : "error",
                 "my_time" : str(time.time())
             }
         return (json.dumps(reply))
@@ -663,12 +670,17 @@ def rx_broadcast(message, ip_user, insert_flag):
 
     #may need a workaround stroing username later
     upi = username
-    #ensure that on braodcasting, you only enter your message once
+
+    #confirm that a broadcast is only being stored once you only enter your message once
     try:  
+        print("entered broadcasting try")
         if(JSON_object['response'] == "ok"): 
+            print("entered if of braodcasting try")
             if(insert_flag == 1):
+                print("insert = 1 here")
             #insert payload as a string
                 db_insert_broadcast(login_record, upi, message, server_time, signature_hex_str, payload)
+                print("post insert into broadcast")
     except:
         print("Not broadcasting to the given user")
 
@@ -729,7 +741,7 @@ def authoriseUserLogin(username, password):
 
 #targetpubkeys and all that stuff needs to be passed as inputs here
 def rx_privatemessage (message, ip_add, pkey, upi):
-##need to update later to allow for user to user messaging. Atm, just hammonds client.
+    ##need to update later to allow for user to user messaging. Atm, just hammonds client.
     url = "http://"+ ip_add + "/api/rx_privatemessage"   #rx_privatemessage"
 
 
@@ -812,6 +824,16 @@ def rx_privatemessage (message, ip_add, pkey, upi):
         exit()
 
     JSON_object = json.loads(data.decode(encoding))
+
+    try:  
+        if(JSON_object['response'] == "ok"): 
+            #insert payload as a string
+                db_insert_message(login_record, target_pubkey, target_username, message_encrypted, time_stamp, signature_hex_str, payload)
+    except:
+        print("Not broadcasting to the given user")
+
+    print(JSON_object)      
+
     print(JSON_object)
 
 #creates a db and only creates table if not present
@@ -1229,9 +1251,9 @@ def ping_check(ip):
     payload = {
         "my_time" : str(time.time()),
         #"my_active_usernames" : username,
-        "connection_address" : "192.168.1.74:10013",
+        "connection_address" : "172.23.106.138:10013",
         #"connection_address" : "127.0.0.1:8000",
-        "connection_location" : 1
+        "connection_location" : "1"
     }
 
     payload = json.dumps(payload).encode('utf-8')
@@ -1252,7 +1274,7 @@ def ping_check(ip):
         print(json.dumps({'response': "not ok"}))
         return (json.dumps({'response': "not ok"}))
     
-
+#returning user ips of all online people
 def list_online_users():
     user_list = []
     user_ip = []
@@ -1277,7 +1299,7 @@ def list_online_users():
     #users = str(users)
     return (user_ip)   
 
-
+#returning ip and pkey of given upi if online
 def get_user_ip_address (upi):
     users_object = list_users()
     all_users = users_object['users']

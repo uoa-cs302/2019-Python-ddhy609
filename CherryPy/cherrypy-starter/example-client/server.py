@@ -104,7 +104,18 @@ class MainApp(object):
     @cherrypy.expose
     def tx_broadcast(self,message):
         #print(message)
-        rx_broadcast(message)
+        list_connection = list_online_users()
+
+        for x in list_connection:
+            try:
+                responding = ping_check(x)
+            except:
+                continue
+
+            if(responding['response'] == "ok"):
+                rx_broadcast(message,x)
+
+        
 
     @cherrypy.expose
     def get_database_messages(self):
@@ -554,13 +565,13 @@ def check_pubkey():
     JSON_object = json.loads(data.decode(encoding))
     print(JSON_object)
 
-def rx_broadcast(message):
+def rx_broadcast(message, ip_user):
     #########################################################3
     #cs302.kiwi.land needs to be replaced by IP address+ListeningPort of receiver
     IPFeneel= "172.23.114.169:1234"
     IPAdmin = "210.54.33.182:80"
     IPLaksh = "172.23.186.227:10001"
-    url = "http://"+ IPLaksh +"/api/rx_broadcast"
+    url = "http://"+ ip_user +"/api/rx_broadcast"
 
     #STUDENT TO UPDATE THESE...
     username = "ddhy609"
@@ -865,10 +876,6 @@ def db_insert_broadcast(loginserver_record, upi, message_value, sender_created_a
 #i doubt this is being used right now
 def get_user_pubkey_and_status (upi):
     users_object = list_users()
-
-    upi = "fsan110"
-    
-
     all_users = users_object['users']
     #array_store = []
 
@@ -1164,8 +1171,8 @@ def get_privatedata():
 
     print (decode_string)
 
-def ping_check():
-    url = "http://172.23.114.169:10050/api/ping_check"
+def ping_check(ip):
+    url = "http://"+ ip + "/api/ping_check"
 
     #STUDENT TO UPDATE THESE...
     username = "ddhy609"
@@ -1206,8 +1213,28 @@ def ping_check():
 
     JSON_object = json.loads(data.decode(encoding))
     print(JSON_object)
+    return JSON_object
 
+def list_online_users():
+    user_list = []
+    user_ip = []
+
+    try:
+        JSON_object=list_users()
+        user_info=(JSON_object['users'])
+        
+        for x in user_info:
+            user_list.append(x['username'])
+            user_ip.append(x['connection_address'])
+
+        print(user_list)
+        print(user_ip)
+         
+    except:
+        print("Cant retrieve users")
     
+    #users = str(users)
+    return (user_ip)   
 
 def print_broadcast_messages_username():
     #create my.db if it does not exist, if exists just connects to it
@@ -1230,7 +1257,7 @@ def print_broadcast_messages_username():
     rows=c.fetchall()
 
     string_message=""  
-    string_example = "example"
+
     #reversed
     for row in reversed(rows):
         #converting to dictionary

@@ -17,7 +17,7 @@ import socket
 import nacl.hash
 
 
-url = "http://172.23.114.169/10050/api/add_pubkey"
+url = "http://172.23.114.169/10050/api/rx_groupinvite"
 
 target_pubkey = "78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e"
 target_username = "fsan110"
@@ -29,6 +29,7 @@ password = "DevashishDhyani_364084614"
 signing_key = nacl.signing.SigningKey.generate()
 ###Not really needed
 hex_key = signing_key.encode(encoder=nacl.encoding.HexEncoder)
+print("private key")
 print(hex_key)
 
 signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
@@ -42,10 +43,15 @@ verify_key_hex = verify_key.encode(encoder=nacl.encoding.HexEncoder)
 
 pubkey_hex = signing_key.verify_key.encode(encoder=nacl.encoding.HexEncoder)
 pubkey_hex_str = pubkey_hex.decode('utf-8')
+print("public key")
+print(pubkey_hex_str)
 
 login_record = "ddhy609,e91e6780af87f41217d4be94bb6398a027e2c0e28bb0370c414abb9c952399fd,1558592327.9529357,8cecc3bfb3b9739fc4c443f61d36f23184099b758ba6c8a93c3946b8c067bf56b931205e9d713a1818d63ff5540e33959ad350046c598639b2a3abad2d191605"
 
 gkey = bytes(pubkey_hex_str, encoding='utf-8')
+print("gkey")
+print(gkey)
+
 time_stamp = str(time.time())
 ##############
 #Encrypting public key of target user
@@ -54,6 +60,7 @@ target_pkey = verifykey_target.to_curve25519_public_key()
 sealed_box = nacl.public.SealedBox(target_pkey)
 encrypted = sealed_box.encrypt(gkey, encoder=nacl.encoding.HexEncoder)
 groupkey_encrypted = encrypted.decode('utf-8')
+print("group key encrypted")
 print(groupkey_encrypted)
 ######
 
@@ -62,19 +69,29 @@ print(groupkey_encrypted)
 
 
 groupkey_hash = nacl.hash.sha256(hex_key, encoder=nacl.encoding.HexEncoder)
+print("groupkey_hash")
+print(groupkey_hash)
+
+groupkey_hash = groupkey_hash.decode('utf-8')
+print("post utf 8")
+print(type(groupkey_hash))
+
 
 message_bytes = bytes(login_record + groupkey_hash + target_pubkey + target_username +
     groupkey_encrypted + time_stamp
     , encoding='utf-8')
 
+print("post message bytes addition")
+
 signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
 signature_hex_str = signed.signature.decode('utf-8')
 
+print("sigature")
+print(signature_hex_str)
+print(type(signature_hex_str))
 
 
 #####3
-
-
 
 #create HTTP BASIC authorization header
 credentials = ('%s:%s' % (username, password))
@@ -94,6 +111,8 @@ payload = {
     "signature" : signature_hex_str
 }
 payload = json.dumps(payload).encode('utf-8')
+
+print(payload)
 
 #STUDENT TO COMPLETE:
 #1. convert the payload into json representation, 

@@ -3,9 +3,16 @@
 //global variable storing last db for easy update
 var temp_data_array=[];
 var reverse_try = 0;
+var userUPI = 0;
+
+async function IntervalFunction(){
+    await setInterval(refreshDataFeed, 2000);
+    await setInterval(displaying_online_people, 2000)
+}
 
 $(document).ready(function(){
 
+    IntervalFunction()
     //Form information send
     $('#boxBroadcast').on('submit', function(event) {
         // Prevent the page from reloading
@@ -169,9 +176,11 @@ function refreshDataFeed(){
    });
 } 
 
-setInterval(refreshDataFeed, 5000);
 
-var userUPI
+
+
+
+
 
 function userDisp(username){
     $("#mainHeading").text("Message")
@@ -183,8 +192,8 @@ function userDisp(username){
 }
 
 //display online users
-//function displaying_online_people(){
-$("#online_Users").click(function(){
+function displaying_online_people(){
+//$("#online_Users").click(function(){
     $.get("/get_online_people", function(data){
         var user_lists = data.split("/n")
         //window.alert(userElements)
@@ -199,5 +208,7 @@ $("#online_Users").click(function(){
         }
     })
     //window.alert($(this).id)
-});
-//}
+//});
+}
+
+

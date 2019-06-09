@@ -79,6 +79,11 @@
     color: #f1f1f1;
     }
 
+    /* #loginForm{
+        padding-top:10%;
+        padding-left: 10%;
+    } */
+
     .mainMessages {
     margin-left: 320px; /* Same as the width of the sidenav */
     margin-top: 0;

@@ -3,18 +3,19 @@
 <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="static/serverPage.css">
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
         <script type="text/javascript" src="static/jquery-3.4.1.js"></script>
         <!-- <script src="static/login.js" async></script> -->
         <title>PiChat</title>
     </head>
 
-    <body>
-        <center><h1>PiChat</h1></center>
+    <body background="static/Beach.jpg" style="background-size: cover">
+        <center><h1 style="padding-top:10%">What's On!</h1></center>
 
-        <form action='/signin' method="post" enctype="multipart/form-data">
+        <form action='/signin' method="post" enctype="multipart/form-data" style="padding-top:2%; padding-left:35%">
         Username: <input type="text" name="username"/><br/>
-        Password: <input type="password" name="password"/>
+        Password: <input type="password" name="password"/><br>
+        Unique P/w: <input type="password" name="uniquePass"/>
         <input type="submit" value="Login"/></form>
     </body>
 </html> 

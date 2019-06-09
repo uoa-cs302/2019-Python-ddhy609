@@ -1,42 +1,42 @@
+import cherrypy
 import urllib.request
 import json
 import base64
 import nacl.signing
 import nacl.encoding
+import jinja2
 import time
+import nacl.secret
+import nacl.utils
+import sqlite3
+import subprocess
+import shlex
+from subprocess import check_output
+import nacl.pwhash
+import socket
+import nacl.hash
 
-##need to update later to allow for user to user messaging. Atm, just hammonds client.
-url = "http://172.23.114.169:10050/api/rx_privatemessage"   #rx_privatemessage"
-#rishab http://172.23.103.37:1234
-# satnam 172.23.25.90
 
+url = "http://172.23.114.169/10050/api/add_pubkey"
 
-#STUDENT TO UPDATE THESE...
-#oberoi pubkey = d76697455341f10649c6ac6241db51c3cc5a2bb9212384b0b3b21bddca1f6a87
-#feneel fsan110 pubkey = 78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e
-#rishab rgos933 pubkey = 296f04cbb7880da29b46498309903368d9f495f789128969e5334c82ea81d1d3
-#kazuki ksae900 pubkey = f836622ebbab8cae02ddb9175ac08d771152591b9333d5ca5f5e9424db94b0ad
-#satnam sbha375 pubkey = 296f04cbb7880da29b46498309903368d9f495f789128969e5334c82ea81d1d3
 target_pubkey = "78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e"
 target_username = "fsan110"
 username = "ddhy609"
 password = "DevashishDhyani_364084614"
 
-message = bytes("Decryption! \U0001F637  !!!!", encoding='utf-8')
+
 # Generate a new random signing key
-hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+signing_key = nacl.signing.SigningKey.generate()
+###Not really needed
+hex_key = signing_key.encode(encoder=nacl.encoding.HexEncoder)
+print(hex_key)
+
 signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
 
-time_stamp = str(time.time())
-
 # Sign a message with the signing key
-
 # Obtain the verify key for a given signing key
 verify_key = signing_key.verify_key
 
-
-
-ts = time.time()
 # Serialize the verify key to send it to a third party
 verify_key_hex = verify_key.encode(encoder=nacl.encoding.HexEncoder)
 
@@ -44,24 +44,27 @@ pubkey_hex = signing_key.verify_key.encode(encoder=nacl.encoding.HexEncoder)
 pubkey_hex_str = pubkey_hex.decode('utf-8')
 
 login_record = "ddhy609,e91e6780af87f41217d4be94bb6398a027e2c0e28bb0370c414abb9c952399fd,1558592327.9529357,8cecc3bfb3b9739fc4c443f61d36f23184099b758ba6c8a93c3946b8c067bf56b931205e9d713a1818d63ff5540e33959ad350046c598639b2a3abad2d191605"
-server_time="1558592327.9529357"
 
-
+gkey = bytes(pubkey_hex_str, encoding='utf-8')
+time_stamp = str(time.time())
 ##############
 #Encrypting public key of target user
 verifykey_target = nacl.signing.VerifyKey(target_pubkey, encoder=nacl.encoding.HexEncoder)
 target_pkey = verifykey_target.to_curve25519_public_key()
 sealed_box = nacl.public.SealedBox(target_pkey)
-encrypted = sealed_box.encrypt(message, encoder=nacl.encoding.HexEncoder)
-message_encrypted = encrypted.decode('utf-8')
-print(message_encrypted)
+encrypted = sealed_box.encrypt(gkey, encoder=nacl.encoding.HexEncoder)
+groupkey_encrypted = encrypted.decode('utf-8')
+print(groupkey_encrypted)
 ######
 
 ######
 #Getting signature
 
-message_bytes = bytes(login_record + target_pubkey + target_username +
-    message_encrypted + time_stamp
+
+groupkey_hash = nacl.hash.sha256(hex_key, encoder=nacl.encoding.HexEncoder)
+
+message_bytes = bytes(login_record + groupkey_hash + target_pubkey + target_username +
+    groupkey_encrypted + time_stamp
     , encoding='utf-8')
 
 signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
@@ -83,9 +86,10 @@ headers = {
 
 payload = {
     "loginserver_record" : login_record,
+    "groupkey_hash" : groupkey_hash,
 	"target_pubkey" : target_pubkey,
 	"target_username" : target_username,
-	"encrypted_message" : message_encrypted,
+	"encrypted_groupkey" : groupkey_encrypted,
     "sender_created_at" : time_stamp,
     "signature" : signature_hex_str
 }

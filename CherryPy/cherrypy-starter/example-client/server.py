@@ -107,7 +107,7 @@ class MainApp(object):
         #print(message)
         list_connection = list_online_users()
         insert_flag=1
-
+        
         for x in list_connection:
             try:
                 #if(x=="192.168.20.4:80" or x=="172.23.72.183:12345"):
@@ -313,6 +313,21 @@ class Api(object):
             reply = {
                 "response" : "error",
                 "my_time" : str(time.time())
+            }
+        return (json.dumps(reply))
+
+
+    @cherrypy.expose
+    def rx_groupinvite(self):
+        try:
+            reply = {
+                "response" : "ok",
+                #"my_time" : str(time.time())
+            }
+        except:
+            reply = {
+                "response" : "error",
+                #"my_time" : str(time.time())
             }
         return (json.dumps(reply))
 

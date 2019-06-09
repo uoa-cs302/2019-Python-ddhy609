@@ -183,6 +183,7 @@ function userDisp(username){
 }
 
 //display online users
+//function displaying_online_people(){
 $("#online_Users").click(function(){
     $.get("/get_online_people", function(data){
         var user_lists = data.split("/n")
@@ -199,3 +200,4 @@ $("#online_Users").click(function(){
     })
     //window.alert($(this).id)
 });
+//}

@@ -83,7 +83,7 @@ class MainApp(object):
         
     # LOGGING IN AND OUT
     @cherrypy.expose
-    def signin(self, username=None, password=None):
+    def signin(self, username, password):
         """Check their name and password and send them either to the main page, or back to the main login screen."""
         error = authoriseUserLogin(username, password)
         if error == 0:
@@ -135,7 +135,13 @@ class MainApp(object):
     def send_private_message(self, upi, message):
         # json.loads to convert JSON array to python list
         #response = json.loads(parcel)
+
+        
         flagging = 0
+
+        #insert flagging 0 for inserting
+        insert_flagging = 0
+
         ip_address_gotten, pkey = get_user_ip_address(upi) 
         print(ip_address_gotten)
         print(upi)
@@ -145,7 +151,7 @@ class MainApp(object):
         print(type(responding))
         try:
             if(responding['response'] == "ok"):
-                rx_privatemessage(message, ip_address_gotten, pkey, upi)
+                rx_privatemessage(message, ip_address_gotten, pkey, upi, insert_flagging)
                 flagging =1
         #############################
         except:
@@ -170,7 +176,8 @@ class MainApp(object):
                         #have a condition here later which checks for sending to self and avoid that
                         #something like if x==my_ip
                         #upi, pkey = get_user_upi_pkey(x)
-                        rx_privatemessage(message, x, pkey, upi)
+                        rx_privatemessage(message, x, pkey, upi, insert_flagging)
+                        insert_flagging = 1
                         #print("after broadcast \n")
                         #insert_flag=0
                         #print("Broadcasting")
@@ -244,8 +251,13 @@ class Api(object):
             signature = total_data['signature']
 
             total_data = str(total_data)
-            db_create_broadcast()
-            db_insert_broadcast(loginserver_record, upi, message_value, sender_created_at, signature, total_data)
+
+            #replace with username later
+            if(upi == "ddhy609"):
+                print("why sending to self dev?")
+            else:
+                db_create_broadcast()
+                db_insert_broadcast(loginserver_record, upi, message_value, sender_created_at, signature, total_data)
         
         except :
             reply = { 
@@ -296,8 +308,12 @@ class Api(object):
 
         total_data = str(total_data)
         
-        db_create_message()
-        db_insert_message(loginserver_record, target_pubkey, target_username, message_received, sender_created_at, signature, total_data)
+        #replace with username later
+        if(target_username == "ddhy609"):
+            print("why messaging yourself?")
+        else:
+            db_create_message()
+            db_insert_message(loginserver_record, target_pubkey, target_username, message_received, sender_created_at, signature, total_data)
 
 
         #decoded message in string
@@ -440,7 +456,7 @@ def ping(username, password):
 
     return JSON_object
 
-def report(username, passsword, status):
+def report(username, password, status):
 
     url = "http://cs302.kiwi.land/api/report"
 
@@ -787,11 +803,11 @@ def authoriseUserLogin(username, password):
     #print(store_ping_response)
 
 #targetpubkeys and all that stuff needs to be passed as inputs here
-def rx_privatemessage (message, ip_add, pkey, upi):
+def rx_privatemessage (message, ip_add, pkey, upi, flagging):
     ##need to update later to allow for user to user messaging. Atm, just hammonds client.
     url = "http://"+ ip_add + "/api/rx_privatemessage"   #rx_privatemessage"
 
-
+    #temp_returning = 0
     message = bytes(message,encoding='utf-8')
     #oberoi pubkey = d76697455341f10649c6ac6241db51c3cc5a2bb9212384b0b3b21bddca1f6a87
     #feneel pubkey = 78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e
@@ -876,13 +892,16 @@ def rx_privatemessage (message, ip_add, pkey, upi):
         if(JSON_object['response'] == "ok"): 
             #insert payload as a string
                 print("pre -insert of message")
-                db_insert_message(login_record, target_pubkey, target_username, message_encrypted, time_stamp, signature_hex_str, payload)
+                if(flagging == 0):
+                    db_insert_message(login_record, target_pubkey, target_username, message_encrypted, time_stamp, signature_hex_str, payload)
+                    #temp_returning = 1
     except:
         print("Not broadcasting to the given user")
 
-    print(JSON_object)      
-
-    print(JSON_object)
+    print(JSON_object) 
+        
+    #return temp_returning
+    #print(JSON_object)
 
 #creates a db and only creates table if not present
 def db_create_message():

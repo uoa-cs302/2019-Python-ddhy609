@@ -120,11 +120,11 @@ class MainApp(object):
                 print(responding)
                 print(type(responding))
                 if(responding['response'] == "ok"):
-                    print("entered if")
+                    #print("entered if")
                     #have a condition here later which checks for sending to self and avoid that
                     #something like if x==my_ip
                     rx_broadcast(message,x, insert_flag)
-                    print("after broadcast \n")
+                    #print("after broadcast \n")
                     insert_flag=0
                     #print("Broadcasting")
             except:
@@ -133,22 +133,54 @@ class MainApp(object):
 
     @cherrypy.expose
     def send_private_message(self, upi, message):
-        print("\n \n \n \n \n \n made it inside the function!!! \n \n \n \n \n \n")
-        print(upi + "," + message)
         # json.loads to convert JSON array to python list
         #response = json.loads(parcel)
-        #print(response)
-        #upi = response[0]
-        #message = response[1]
-        #print("UPI FOUND!!!")
-        #this gives ip and pkey 
-        
+        flagging = 0
         ip_address_gotten, pkey = get_user_ip_address(upi) 
         print(ip_address_gotten)
         print(upi)
         print(message)
-        rx_privatemessage(message, ip_address_gotten, pkey, upi)
-        
+        responding = ping_check(ip_address_gotten)
+        print(responding)
+        print(type(responding))
+        try:
+            if(responding['response'] == "ok"):
+                rx_privatemessage(message, ip_address_gotten, pkey, upi)
+                flagging =1
+        #############################
+        except:
+            print("except of try catch after checking for response")
+
+        if(flagging == 0):
+            list_connection = list_online_users()
+            
+            for x in list_connection:
+                try:
+                    #if(x=="192.168.20.4:80" or x=="172.23.72.183:12345"):
+                    #    continue  
+                    
+                    print("ping check this ip \n")
+                    print(x)
+                    print(type(x))
+                    responding = ping_check(x)
+                    print(responding)
+                    print(type(responding))
+                    if(responding['response'] == "ok"):
+                        #print("entered if")
+                        #have a condition here later which checks for sending to self and avoid that
+                        #something like if x==my_ip
+                        #upi, pkey = get_user_upi_pkey(x)
+                        rx_privatemessage(message, x, pkey, upi)
+                        #print("after broadcast \n")
+                        #insert_flag=0
+                        #print("Broadcasting")
+                except:
+                    print("try.catch activated")
+                    continue
+
+
+
+        ########################33
 
     @cherrypy.expose
     def get_database_messages(self):
@@ -843,6 +875,7 @@ def rx_privatemessage (message, ip_add, pkey, upi):
     try:  
         if(JSON_object['response'] == "ok"): 
             #insert payload as a string
+                print("pre -insert of message")
                 db_insert_message(login_record, target_pubkey, target_username, message_encrypted, time_stamp, signature_hex_str, payload)
     except:
         print("Not broadcasting to the given user")
@@ -1321,15 +1354,17 @@ def get_user_ip_address (upi):
     print(all_users)
     value_connect = 0
     value_targetpkey = 0
+    try:
+        for x in all_users :
+            #array_store.append(x['username'])
+            if(x['username'] == upi):
+                if(x['status'] == "online"):
+                    value_connect=(x['connection_address'])
+                    value_targetpkey = (x['incoming_pubkey'])
 
-    for x in all_users :
-        #array_store.append(x['username'])
-        if(x['username'] == upi):
-            if(x['status'] == "online"):
-                value_connect=(x['connection_address'])
-                value_targetpkey = (x['incoming_pubkey'])
-
-    return value_connect, value_targetpkey
+        return value_connect, value_targetpkey
+    except:
+        return value_connect, value_targetpkey
 
 def print_broadcast_messages_username():
     #create my.db if it does not exist, if exists just connects to it
@@ -1373,3 +1408,22 @@ def print_broadcast_messages_username():
     #going from 0 to -2 to get rid of the last /n value
     string_message = string_message[0:-2]
     return (string_message)
+
+
+def get_user_upi_pkey (ip_add):
+    users_object = list_users()
+    all_users = users_object['users']
+    print(all_users)
+    value_upi = 0
+    value_targetpkey = 0
+    try:
+        for x in all_users :
+            #array_store.append(x['username'])
+            if(x['connection_address'] == ip_add):
+                if(x['status'] == "online"):
+                    value_upi=(x['username'])
+                    value_targetpkey = (x['incoming_pubkey'])
+
+        return value_upi, value_targetpkey
+    except:
+        return value_upi, value_targetpkey

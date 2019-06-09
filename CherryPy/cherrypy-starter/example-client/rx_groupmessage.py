@@ -17,7 +17,7 @@ import socket
 import nacl.hash
 
 
-url = "http://172.23.114.169:10050/api/rx_groupinvite"
+url = "http://172.23.114.169:10050/api/rx_groupmessage"
 
 target_pubkey = "78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e"
 target_username = "fsan110"
@@ -104,9 +104,7 @@ headers = {
 payload = {
     "loginserver_record" : login_record,
     "groupkey_hash" : groupkey_hash,
-	"target_pubkey" : target_pubkey,
-	"target_username" : target_username,
-	"encrypted_groupkey" : groupkey_encrypted,
+	"group_message" : target_pubkey,
     "sender_created_at" : time_stamp,
     "signature" : signature_hex_str
 }

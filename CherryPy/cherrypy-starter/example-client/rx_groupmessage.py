@@ -48,20 +48,20 @@ print(pubkey_hex_str)
 
 login_record = "ddhy609,e91e6780af87f41217d4be94bb6398a027e2c0e28bb0370c414abb9c952399fd,1558592327.9529357,8cecc3bfb3b9739fc4c443f61d36f23184099b758ba6c8a93c3946b8c067bf56b931205e9d713a1818d63ff5540e33959ad350046c598639b2a3abad2d191605"
 
-gkey = bytes(pubkey_hex_str, encoding='utf-8')
-print("gkey")
-print(gkey)
+message_key = bytes("Decryption Grp Chat?", encoding='utf-8')
+print("message_key")
+print(message_key)
 
 time_stamp = str(time.time())
 ##############
 #Encrypting public key of target user
-verifykey_target = nacl.signing.VerifyKey(target_pubkey, encoder=nacl.encoding.HexEncoder)
+verifykey_target = nacl.signing.VerifyKey(pubkey_hex_str, encoder=nacl.encoding.HexEncoder)
 target_pkey = verifykey_target.to_curve25519_public_key()
 sealed_box = nacl.public.SealedBox(target_pkey)
-encrypted = sealed_box.encrypt(gkey, encoder=nacl.encoding.HexEncoder)
-groupkey_encrypted = encrypted.decode('utf-8')
-print("group key encrypted")
-print(groupkey_encrypted)
+encrypted = sealed_box.encrypt(message_key, encoder=nacl.encoding.HexEncoder)
+group_message = encrypted.decode('utf-8')
+print("message encrypted")
+print(group_message)
 ######
 
 ######
@@ -77,8 +77,7 @@ print("post utf 8")
 print(type(groupkey_hash))
 
 
-message_bytes = bytes(login_record + groupkey_hash + target_pubkey + target_username +
-    groupkey_encrypted + time_stamp
+message_bytes = bytes(login_record + group_message + time_stamp
     , encoding='utf-8')
 
 print("post message bytes addition")

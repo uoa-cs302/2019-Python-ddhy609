@@ -14,6 +14,7 @@ import shlex
 from subprocess import check_output
 import nacl.pwhash
 import socket
+import ast
 
 startHTML = "<html><head><title>CS302 example</title><link rel='stylesheet' href='/static/example.css' /></head><body>"
 
@@ -37,8 +38,8 @@ class MainApp(object):
     # PAGES (which return HTML that can be viewed in browser)
     @cherrypy.expose
     def index(self):
-        #return self.login_page()
-        return self.broadcast()
+        return self.login_page()
+        #return self.broadcast()
 
     ############################################
     #open the seperate page files
@@ -83,9 +84,9 @@ class MainApp(object):
         
     # LOGGING IN AND OUT
     @cherrypy.expose
-    def signin(self, username, password):
+    def signin(self, username, password, uniquePass):
         """Check their name and password and send them either to the main page, or back to the main login screen."""
-        error = authoriseUserLogin(username, password)
+        error = authoriseUserLogin(username, password,uniquePass)
         if error == 0:
             cherrypy.session['username'] = username
             raise cherrypy.HTTPRedirect('/messages')
@@ -253,8 +254,8 @@ class Api(object):
             total_data = str(total_data)
 
             #replace with username later
-            if(upi == "ddhy609"):
-                print("why sending to self dev?")
+            if(upi == cherrypy.session.get('username')):
+                print("No need to send to yourself")
             else:
                 db_create_broadcast()
                 db_insert_broadcast(loginserver_record, upi, message_value, sender_created_at, signature, total_data)
@@ -275,7 +276,8 @@ class Api(object):
         total_data = json.loads(cherrypy.request.body.read()) #.decode('utf-8'))
         message_received = total_data['encrypted_message']
         
-        key=b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+        #key=b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+        key = cherrypy.session.get('hex_key')
 
         signing_key=nacl.signing.SigningKey(key,encoder=nacl.encoding.HexEncoder)
         publickey= signing_key.to_curve25519_private_key()
@@ -309,8 +311,8 @@ class Api(object):
         total_data = str(total_data)
         
         #replace with username later
-        if(target_username == "ddhy609"):
-            print("why messaging yourself?")
+        if(target_username == cherrypy.session.get('username')):
+            print("No need to message yourself")
         else:
             db_create_message()
             db_insert_message(loginserver_record, target_pubkey, target_username, message_received, sender_created_at, signature, total_data)
@@ -383,7 +385,7 @@ class Api(object):
 ###
 #####
 
-def ping(username, password):
+def ping():
     url = "http://cs302.kiwi.land/api/ping"
 
     #STUDENT TO UPDATE THESE...
@@ -396,7 +398,8 @@ def ping(username, password):
     #hexkey= b'2da036038dc32976d9d3b0126bddfc93cd6e3ef0327eac0cd678b941848de308'
     ###Not really needed
     #hex_key = signing_key.encode(encoder=nacl.encoding.HexEncoder)
-    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    #hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    hex_key = cherrypy.session.get('hex_key')
     #hex_key = b'a0251f5f930887567b0ca34611fbf23d7b6dc55b4d7b6006889661112610c55b'
     signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
     print(hex_key)
@@ -423,10 +426,10 @@ def ping(username, password):
     ####
 
     #create HTTP BASIC authorization header
-    credentials = ('%s:%s' % (username, password))
-    b64_credentials = base64.b64encode(credentials.encode('ascii'))
+   
     headers = {
-        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'X-username': cherrypy.session.get('username'),
+        'X-apikey':cherrypy.session.get('api_key'),
         'Content-Type' : 'application/json; charset=utf-8',
     }
 
@@ -456,7 +459,7 @@ def ping(username, password):
 
     return JSON_object
 
-def report(username, password, status):
+def report(status):
 
     url = "http://cs302.kiwi.land/api/report"
 
@@ -467,7 +470,8 @@ def report(username, password, status):
     ip_val = get_IP()
 
     #hex_key = signing_key.encode(encoder=nacl.encoding.HexEncoder)
-    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    #hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    hex_key = cherrypy.session.get('hex_key')
     signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
     print(hex_key)
     #######
@@ -493,12 +497,12 @@ def report(username, password, status):
     ####
 
     #create HTTP BASIC authorization header
-    credentials = ('%s:%s' % (username, password))
-    b64_credentials = base64.b64encode(credentials.encode('ascii'))
     headers = {
-        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'X-username': cherrypy.session.get('username'),
+        'X-apikey':cherrypy.session.get('api_key'),
         'Content-Type' : 'application/json; charset=utf-8',
     }
+   
 
     payload = {
         "connection_address" : ip_val + ":10013",
@@ -524,9 +528,9 @@ def report(username, password, status):
         exit()
 
     JSON_object = json.loads(data.decode(encoding))
-    print(JSON_object)
+    return JSON_object['response']
 
-def add_pubkey(username, password):
+def add_pubkey():
     url = "http://cs302.kiwi.land/api/add_pubkey"
 
     #STUDENT TO UPDATE THESE...
@@ -561,11 +565,9 @@ def add_pubkey(username, password):
     signature_hex_str = signed.signature.decode('utf-8')
     ####
 
-    #create HTTP BASIC authorization header
-    credentials = ('%s:%s' % (username, password))
-    b64_credentials = base64.b64encode(credentials.encode('ascii'))
     headers = {
-        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'X-username': cherrypy.session.get('username'),
+        'X-apikey':cherrypy.session.get('api_key'),
         'Content-Type' : 'application/json; charset=utf-8',
     }
 
@@ -596,12 +598,12 @@ def add_pubkey(username, password):
 
 def check_pubkey():
     #STUDENT TO UPDATE THESE...
-    username = "ddhy609"
-    password = "DevashishDhyani_364084614"
+    
 
 
     #hex_key = signing_key.encode(encoder=nacl.encoding.HexEncoder)
-    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    #hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    hex_key = cherrypy.session.get('hex_key')
     signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
     print(hex_key)
     #######
@@ -630,11 +632,9 @@ def check_pubkey():
     signature_hex_str = signed.signature.decode('utf-8')
     ####
 
-    #create HTTP BASIC authorization header
-    credentials = ('%s:%s' % (username, password))
-    b64_credentials = base64.b64encode(credentials.encode('ascii'))
     headers = {
-        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'X-username': cherrypy.session.get('username'),
+        'X-apikey':cherrypy.session.get('api_key'),
         'Content-Type' : 'application/json; charset=utf-8',
     }
 
@@ -669,13 +669,12 @@ def rx_broadcast(message, ip_user, insert_flag):
     IPLaksh = "172.23.186.227:10001"
     url = "http://"+ ip_user +"/api/rx_broadcast"
 
-    #STUDENT TO UPDATE THESE...
-    username = "ddhy609"
-    password = "DevashishDhyani_364084614"
+    
 
 
     #space after emoji required to allow for overlap b/w emoji and text
-    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    #hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    hex_key = cherrypy.session.get('hex_key')
     signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
 
 
@@ -701,11 +700,9 @@ def rx_broadcast(message, ip_user, insert_flag):
     signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
     signature_hex_str = signed.signature.decode('utf-8')
 
-    #create HTTP BASIC authorization header
-    credentials = ('%s:%s' % (username, password))
-    b64_credentials = base64.b64encode(credentials.encode('ascii'))
     headers = {
-        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'X-username': cherrypy.session.get('username'),
+        'X-apikey':cherrypy.session.get('api_key'),
         'Content-Type' : 'application/json; charset=utf-8',
     }
 
@@ -732,7 +729,7 @@ def rx_broadcast(message, ip_user, insert_flag):
     JSON_object = json.loads(data.decode(encoding))
 
     #may need a workaround stroing username later
-    upi = username
+    upi = cherrypy.session.get('username')
 
     #confirm that a broadcast is only being stored once you only enter your message once
     try:  
@@ -752,15 +749,11 @@ def rx_broadcast(message, ip_user, insert_flag):
 def list_users():
     url = "http://cs302.kiwi.land/api/list_users"
 
-    #STUDENT TO UPDATE THESE...
-    username = "ddhy609"
-    password = "DevashishDhyani_364084614"
+    
 
-    #create HTTP BASIC authorization header
-    credentials = ('%s:%s' % (username, password))
-    b64_credentials = base64.b64encode(credentials.encode('ascii'))
     headers = {
-        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'X-username': cherrypy.session.get('username'),
+        'X-apikey':cherrypy.session.get('api_key'),
         'Content-Type' : 'application/json; charset=utf-8',
     }
 
@@ -790,15 +783,45 @@ def list_users():
     print("\n")
     return(JSON_object)
 
-def authoriseUserLogin(username, password):
+def authoriseUserLogin(username, password, uniquePass):
+    try:
+        cherrypy.session['username']=username
 
-    ping_response = ping(username, password)
-    if(ping_response['signature'] == "ok" and ping_response['response'] == "ok"):
-        report(username, password, "online")
-        return 0
-    else:
+        print("goes into authorise login")
+        print(username)
+        print(password)
+        print(uniquePass)
+        #sign in flow
+        #get private data
+        
+        #load new api key and add it to the session
+        api_key_response=load_new_apikey(username,password)
+        print(api_key_response)
+        if api_key_response['response']=="ok":
+            print("stored api_key to session")
+            cherrypy.session['api_key']=api_key_response['api_key']
+            get_privatedata(username,password,uniquePass)
+        else:
+            return 1    
+        print("trying to ping")
+        ping_response = ping()
+        print("ping response")
+        print(ping_response)
+        if(ping_response['signature'] == "ok" and ping_response['response'] == "ok"):
+            print("trying to report")
+            response=report("online")
+            if (response =="ok"):
+                print("report response ok")
+                print("trying get private data")
+               
+                return 0
+            else:
+                return 1
+
+        else:
+            return 1
+    except:
         return 1
-
     #for succesful login, return 0
     #print(store_ping_response)
 
@@ -813,12 +836,11 @@ def rx_privatemessage (message, ip_add, pkey, upi, flagging):
     #feneel pubkey = 78123e33622eb039e8c20fb30713902c37bf9fe4493bd1e16e69cd8cc129e03e
     target_pubkey = pkey
     target_username = upi
-    username = "ddhy609"
-    password = "DevashishDhyani_364084614"
 
     #message = bytes("WE got this! \U0001F637  !!!!", encoding='utf-8')
     # Generate a new random signing key
-    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    #hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    hex_key = cherrypy.session.get('hex_key')
     signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
 
     time_stamp = str(time.time())
@@ -858,11 +880,9 @@ def rx_privatemessage (message, ip_add, pkey, upi, flagging):
     signed = signing_key.sign(message_bytes, encoder=nacl.encoding.HexEncoder)
     signature_hex_str = signed.signature.decode('utf-8')
 
-    #create HTTP BASIC authorization header
-    credentials = ('%s:%s' % (username, password))
-    b64_credentials = base64.b64encode(credentials.encode('ascii'))
     headers = {
-        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'X-username': cherrypy.session.get('username'),
+        'X-apikey':cherrypy.session.get('api_key'),
         'Content-Type' : 'application/json; charset=utf-8',
     }
 
@@ -1080,13 +1100,13 @@ def get_IP():
     ip_add = ip_string[0:len(ip_string)-2]
     return(ip_add)
 
-def checkmessages(): 
+def checkmessages(url_val, time_val): 
 
     Time =1558765969.000000
     #STUDENT TO UPDATE THESE...
-    username = "ddhy609"
-    password = "DevashishDhyani_364084614"
-    private_key =b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    
+    #private_key =b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    private_key = cherrypy.session.get('hex_key')
     private_key=nacl.signing.SigningKey(private_key, encoder=nacl.encoding.HexEncoder)
     #public key
     public_key=private_key.verify_key
@@ -1096,17 +1116,17 @@ def checkmessages():
     sign = private_key.sign(bytes(pkey,encoding='utf-8'), encoder=nacl.encoding.HexEncoder)
     #create a string signature
     sig = sign.signature.decode('utf-8')
-    #create HTTP BASIC authorization header
-    credentials = ('%s:%s' % (username, password))
-    b64_credentials = base64.b64encode(credentials.encode('ascii'))
+    
 
     #url = "http://cs302.kiwi.land/api/checkmessages?since="+(Time)
     #kazuki 172.23.46.106:1234
-    url= "http://172.23.114.169:1234/api/checkmessages?since="+str(Time) #dev
+    #url= "http://172.23.114.169:1234/api/checkmessages?since="+str(Time) #dev
+    url = url_val + "/api/checkmessages?since="+str(Time)
 
 
     headers = {
-        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'X-username': cherrypy.session.get('username'),
+        'X-apikey':cherrypy.session.get('api_key'),
         'Content-Type' : 'application/json; charset=utf-8',
     }
     
@@ -1163,17 +1183,16 @@ def checkmessages():
     response.close()
 
 #make changes later
-def add_privatedata():
+def add_privatedata(uniquepass):
     url = "http://cs302.kiwi.land/api/add_privatedata"
 
-    #STUDENT TO UPDATE THESE...
-    username = "ddhy609"
-    password = "DevashishDhyani_364084614"
+    
     uniquepass = "password"
 
     unix_time = str(time.time())
     loginserverrecord = 'ddhy609,e91e6780af87f41217d4be94bb6398a027e2c0e28bb0370c414abb9c952399fd,1558592327.9529357,8cecc3bfb3b9739fc4c443f61d36f23184099b758ba6c8a93c3946b8c067bf56b931205e9d713a1818d63ff5540e33959ad350046c598639b2a3abad2d191605'
-    privkey = 'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    #privkey = 'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    privkey=cherrypy.session.get('hex_key')
 
     privdata = {
         "prikeys": [privkey],
@@ -1211,11 +1230,9 @@ def add_privatedata():
 
     #print (signature_hex_str)
 
-    #create HTTP BASIC authorization header
-    credentials = ('%s:%s' % (username, password))
-    b64_credentials = base64.b64encode(credentials.encode('ascii'))
     headers = {
-        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'X-username': cherrypy.session.get('username'),
+        'X-apikey':cherrypy.session.get('api_key'),
         'Content-Type' : 'application/json; charset=utf-8',
     }
 
@@ -1245,20 +1262,13 @@ def add_privatedata():
     print(JSON_object)
 
 #make changes later
-def get_privatedata():
-    url = "http://cs302.kiwi.land/api/get_privatedata"
-
-    #STUDENT TO UPDATE THESE...
-    username = "ddhy609"
-    password = "DevashishDhyani_364084614"
-    uniquepass = "password"
-    #print (signature_hex_str)
-
-    #create HTTP BASIC authorization header
-    credentials = ('%s:%s' % (username, password))
-    b64_credentials = base64.b64encode(credentials.encode('ascii'))
+def get_privatedata(username,password,uniquepass):
+    url = "http://cs302.kiwi.land/api/get_privatedata"  
+    
+    
     headers = {
-        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'X-username': username,
+        'X-apikey':cherrypy.session.get('api_key'),
         'Content-Type' : 'application/json; charset=utf-8',
     }
 
@@ -1296,22 +1306,21 @@ def get_privatedata():
     decrypt_string = box.decrypt(encoded_string, encoder=nacl.encoding.Base64Encoder)
 
     decode_string = decrypt_string.decode('utf-8')
-
-
+    
+    
     print (decode_string)
+    dict=ast.literal_eval(decode_string)
+    prikeys=dict['prikeys']
+    cherrypy.session['prikeys']=prikeys
+    cherrypy.session['hex_key']=prikeys[-1]
+    print("private data is succesfully retrieved from login server")
 
 def ping_check(ip):
     url = "http://"+ ip + "/api/ping_check"
 
-    #STUDENT TO UPDATE THESE...
-    username = "ddhy609"
-    password = "DevashishDhyani_364084614"
-
-    #create HTTP BASIC authorization header
-    credentials = ('%s:%s' % (username, password))
-    b64_credentials = base64.b64encode(credentials.encode('ascii'))
     headers = {
-        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'X-username': cherrypy.session.get('username'),
+        'X-apikey':cherrypy.session.get('api_key'),
         'Content-Type' : 'application/json; charset=utf-8',
     }
 
@@ -1446,3 +1455,29 @@ def get_user_upi_pkey (ip_add):
         return value_upi, value_targetpkey
     except:
         return value_upi, value_targetpkey
+
+def load_new_apikey(username,password):
+    
+    url = "http://cs302.kiwi.land/api/load_new_apikey"
+    #create request and open it into a response object
+
+    #create HTTP BASIC authorization header
+    credentials = ('%s:%s' % (username, password))
+    b64_credentials = base64.b64encode(credentials.encode('ascii'))
+    headers = {
+        'Authorization': 'Basic %s' % b64_credentials.decode('ascii'),
+        'Content-Type' : 'application/json; charset=utf-8',
+    }
+
+    req = urllib.request.Request(url,headers=headers)
+    response = urllib.request.urlopen(req)
+
+    #read and process the received bytes
+    data = response.read() 
+    encoding = response.info().get_content_charset('utf-8') #load encoding if possible (default to utf-8)
+    response.close() #be a tidy kiwi
+    JSON_object = json.loads(data.decode(encoding))
+    print("load api key done successful")
+    #print(JSON_object)
+    return JSON_object
+    

@@ -257,7 +257,7 @@ class Api(object):
             total_data = str(total_data)
 
             #replace with username later
-            if(upi == cherrypy.session.get('username')):
+            if(upi == "ddhy609"):
                 print("No need to send to yourself")
             else:
                 db_create_broadcast()
@@ -279,8 +279,11 @@ class Api(object):
         total_data = json.loads(cherrypy.request.body.read()) #.decode('utf-8'))
         message_received = total_data['encrypted_message']
         
-        #key=b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
-        key = cherrypy.session.get('hex_key')
+        key=b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+        #key = cherrypy.session.get('hex_key')
+        #print(key + " \n \n \n")
+        #key = bytes(key, encoding='utf-8')
+        #print(key)
 
         signing_key=nacl.signing.SigningKey(key,encoder=nacl.encoding.HexEncoder)
         publickey= signing_key.to_curve25519_private_key()
@@ -676,8 +679,8 @@ def rx_broadcast(message, ip_user, insert_flag):
 
 
     #space after emoji required to allow for overlap b/w emoji and text
-    #hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
-    hex_key = cherrypy.session.get('hex_key')
+    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    #hex_key = cherrypy.session.get('hex_key')
     signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
 
 
@@ -842,8 +845,14 @@ def rx_privatemessage (message, ip_add, pkey, upi, flagging):
 
     #message = bytes("WE got this! \U0001F637  !!!!", encoding='utf-8')
     # Generate a new random signing key
-    #hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
-    hex_key = cherrypy.session.get('hex_key')
+    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    #hex_key = cherrypy.session.get('hex_key')
+    #print(type(hex_key) + "\n \n \n \n \n \n \n"+ "original")
+
+    #hexadecimal_key = cherrypy.session.get('hex_key')
+    #hexadecimal_key = bytes(hexadecimal_key, encoding = 'utf-8')
+    #print(type(hexadecimal_key) + "\n \n \n \n \n \n \n"+ "bytes hopefully?")
+    
     signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
 
     time_stamp = str(time.time())
@@ -853,7 +862,7 @@ def rx_privatemessage (message, ip_add, pkey, upi, flagging):
     # Obtain the verify key for a given signing key
     verify_key = signing_key.verify_key
     
-    # Serialize the verify key to send it to a third party
+    # Serialize the verify key to rx_prx_prx_psend it to a third party
     #verify_key_hex = verify_key.encode(encoder=nacl.encoding.HexEncoder)
 
     pubkey_hex = signing_key.verify_key.encode(encoder=nacl.encoding.HexEncoder)
@@ -1312,10 +1321,10 @@ def get_privatedata(username,password,uniquepass):
     
     
     print (decode_string)
-    dict=ast.literal_eval(decode_string)
-    prikeys=dict['prikeys']
+    prikeys_now=ast.literal_eval(decode_string)
+    prikeys=prikeys_now['prikeys']
     cherrypy.session['prikeys']=prikeys
-    cherrypy.session['hex_key']=prikeys[-1]
+    cherrypy.session['hex_key']=prikeys[0]
     print("private data is succesfully retrieved from login server")
 
 def ping_check(ip):
@@ -1327,10 +1336,12 @@ def ping_check(ip):
         'Content-Type' : 'application/json; charset=utf-8',
     }
 
+    ip_value = get_IP()
+
     payload = {
         "my_time" : str(time.time()),
         #"my_active_usernames" : username,
-        "connection_address" : "172.23.106.138:10013",
+        "connection_address" : ip_value + ":10013",
         #"connection_address" : "127.0.0.1:8000",
         "connection_location" : "1"
     }

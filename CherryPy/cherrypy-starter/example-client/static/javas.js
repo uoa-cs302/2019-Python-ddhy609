@@ -5,9 +5,14 @@ var temp_data_array=[];
 var reverse_try = 0;
 var userUPI = 0;
 
+
+
+
 async function IntervalFunction(){
+    await setInterval(callReport, 5000)
     await setInterval(refreshDataFeed, 2000);
     await setInterval(displaying_online_people, 2000)
+    
 }
 
 $(document).ready(function(){
@@ -179,7 +184,20 @@ function refreshDataFeed(){
 
 
 
+function callReport(){ 
+    $.ajax({
+        type: "POST",
+        url: "/call_report",
+        data: "status="+"online",
+        error : function(){
+            //window.alert("Couldn't send message")
+        },
+        success: function(){
 
+            //window.alert("REPORT SUCCESS")
+        }
+    })
+}
 
 
 function userDisp(username){

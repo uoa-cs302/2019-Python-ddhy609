@@ -83,6 +83,11 @@ class MainApp(object):
         return str(output)
         
     # LOGGING IN AND OUT
+
+    @cherrypy.expose
+    def call_report(self, status):
+        report(status)
+
     @cherrypy.expose
     def signin(self, username, password, uniquePass):
         """Check their name and password and send them either to the main page, or back to the main login screen."""
@@ -255,6 +260,18 @@ class Api(object):
             signature = total_data['signature']
 
             total_data = str(total_data)
+
+            if("fuck" in message_value or "shit" in message_value or "asshole" in message_value or "dick" in message_value or "bhenc" in message_value):
+                reply = { 
+                "response" : "error"
+                }
+                return(json.dumps(reply))
+
+            if(upi == "sbha375" or upi == "pmal123" or upi == "jsay091"):
+                reply = { 
+                "response" : "error"
+                }
+                return(json.dumps(reply))
 
             #replace with username later
             if(upi == "ddhy609"):
@@ -512,7 +529,7 @@ def report(status):
 
     payload = {
         "connection_address" : ip_val + ":10013",
-        "connection_location" : 1,
+        "connection_location" : "0",
         "incoming_pubkey" : pubkey_hex_str,
         "status" : status
     }
@@ -679,8 +696,8 @@ def rx_broadcast(message, ip_user, insert_flag):
 
 
     #space after emoji required to allow for overlap b/w emoji and text
-    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
-    #hex_key = cherrypy.session.get('hex_key')
+    #hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    hex_key = cherrypy.session.get('hex_key')
     signing_key = nacl.signing.SigningKey(hex_key, encoder=nacl.encoding.HexEncoder)
 
 
@@ -817,9 +834,10 @@ def authoriseUserLogin(username, password, uniquePass):
             print("trying to report")
             response=report("online")
             if (response =="ok"):
+                #getting_messages()
                 print("report response ok")
                 print("trying get private data")
-               
+
                 return 0
             else:
                 return 1
@@ -845,8 +863,8 @@ def rx_privatemessage (message, ip_add, pkey, upi, flagging):
 
     #message = bytes("WE got this! \U0001F637  !!!!", encoding='utf-8')
     # Generate a new random signing key
-    hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
-    #hex_key = cherrypy.session.get('hex_key')
+    #hex_key = b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
+    hex_key = cherrypy.session.get('hex_key')
     #print(type(hex_key) + "\n \n \n \n \n \n \n"+ "original")
 
     #hexadecimal_key = cherrypy.session.get('hex_key')
@@ -1112,11 +1130,7 @@ def get_IP():
     ip_add = ip_string[0:len(ip_string)-2]
     return(ip_add)
 
-def checkmessages(url_val, time_val): 
-
-    Time =1558765969.000000
-    #STUDENT TO UPDATE THESE...
-    
+def checkmessages(url_val, time_val):  
     #private_key =b'c3efb78f4d0bb9bdfbf938aa870ad92298f53e4e0d13b951bcc8f5ac877dc627'
     private_key = cherrypy.session.get('hex_key')
     private_key=nacl.signing.SigningKey(private_key, encoder=nacl.encoding.HexEncoder)
@@ -1133,7 +1147,7 @@ def checkmessages(url_val, time_val):
     #url = "http://cs302.kiwi.land/api/checkmessages?since="+(Time)
     #kazuki 172.23.46.106:1234
     #url= "http://172.23.114.169:1234/api/checkmessages?since="+str(Time) #dev
-    url = url_val + "/api/checkmessages?since="+str(Time)
+    url = "http://" + url_val + "/api/checkmessages?since="+time_val
 
 
     headers = {
@@ -1147,10 +1161,11 @@ def checkmessages(url_val, time_val):
     }
 
     try:
+        
         A=json.dumps(payload).encode('utf-8')
 
         req = urllib.request.Request(url,data=A,headers=headers)
-        response = urllib.request.urlopen(req)
+        response = urllib.request.urlopen(req, timeout=1)
 
         data = response.read() # read the received bytes
         encoding = response.info().get_content_charset('utf-8')
@@ -1164,6 +1179,7 @@ def checkmessages(url_val, time_val):
 
         #need to store x as a string since its a Json object and sql only likes strings
         for x in broadcast_data:
+            counting_inserts=0
             loginserver_record = x['loginserver_record']
             message = x['message']
             sender_created_at = x['sender_created_at']
@@ -1176,9 +1192,13 @@ def checkmessages(url_val, time_val):
                 upi = loginserver_record[0:7]
 
             db_insert_broadcast(loginserver_record, upi, message, sender_created_at, signature, str(x))
+            counting_inserts= counting_inserts+1
         
+            if(counting_inserts >=5):
+                break
 
         for x in message_data:
+            counting_inserts=0
             loginserver_record = x['loginserver_record']
             target_pubkey = x['target_pubkey']
             target_username = x['target_username']
@@ -1187,6 +1207,10 @@ def checkmessages(url_val, time_val):
             signature = x['signature']
 
             db_insert_message(loginserver_record, target_pubkey, target_username, encrypted_message, sender_created_at, signature ,str(x))
+            counting_inserts= counting_inserts+1
+        
+            if(counting_inserts >=5):
+                break
 
     except:
         print("Can't insert for this user")
@@ -1343,7 +1367,7 @@ def ping_check(ip):
         #"my_active_usernames" : username,
         "connection_address" : ip_value + ":10013",
         #"connection_address" : "127.0.0.1:8000",
-        "connection_location" : "1"
+        "connection_location" : "0"
     }
 
     payload = json.dumps(payload).encode('utf-8')
@@ -1495,3 +1519,12 @@ def load_new_apikey(username,password):
     #print(JSON_object)
     return JSON_object
     
+def getting_messages():
+    try:
+        JSON_object=list_users()
+        user_info=(JSON_object['users'])
+        
+        for x in user_info:
+            checkmessages(x['connection_address'], "1560140943.320333")
+    except:
+        print("can't retrieve messages from given user")

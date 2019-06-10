@@ -89,7 +89,7 @@ class MainApp(object):
         error = authoriseUserLogin(username, password,uniquePass)
         if error == 0:
             cherrypy.session['username'] = username
-            raise cherrypy.HTTPRedirect('/messages')
+            raise cherrypy.HTTPRedirect('/broadcast')
         else:
             raise cherrypy.HTTPRedirect('/login_page')
 
@@ -97,6 +97,9 @@ class MainApp(object):
     def signout(self):
         """Logs the current user out, expires their session"""
         username = cherrypy.session.get('username')
+        print("pre signout \n")
+        report("offline")
+        print("post signout")
         if username is None:
             pass
         else:
